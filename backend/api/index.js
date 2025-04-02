@@ -130,21 +130,31 @@ app.post('/forgot-password', async (req, res) => {
 });
 
 // Reset Password (via token in URL)
-app.post('/reset-password/:token', async (req, res) => {
-    const { token } = req.params;
-    const { newPassword } = req.body;
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
-        const user = await User.findOne({ email: decoded.email, resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
-        if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
+app.post('/signup', async (req, res) => {
+    const { name, email, password, preferences } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOTP();
+    const otpExpiry = Date.now() + 10 * 60 * 1000;
+    const user = new User({ name, email, password: hashedPassword, role: 'user', preferences, otp, otpExpiry });
 
-        user.password = await bcrypt.hash(newPassword, 10);
-        user.resetToken = null;
-        user.resetTokenExpiry = null;
+    try {
         await user.save();
-        res.json({ message: 'Password reset successful - login with your new password' });
+        const mailOptions = {
+            to: email,
+            subject: 'Verify Your SkillVoyage Account with OTP',
+            html: `Your OTP for SkillVoyage account verification is <b>${otp}</b>. It expires in 10 minutes.`
+        };
+        console.log(`Sending OTP email to ${email}: ${otp}`);
+        await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(`Email sending error: ${error.message}`);
+            } else {
+                console.log(`Email sent: ${info.response}`);
+            }
+        });
+        res.json({ message: 'Signup successful - check your email for the OTP' });
     } catch (err) {
-        res.status(400).json({ error: 'Token expired or invalid' });
+        res.status(400).json({ error: err.message });
     }
 });
 
