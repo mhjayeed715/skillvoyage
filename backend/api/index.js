@@ -61,19 +61,14 @@ app.post('/signup', async (req, res) => {
             html: `Your OTP for SkillVoyage account verification is <b>${otp}</b>. It expires in 10 minutes.`
         };
         console.log(`Sending OTP email to ${email}: ${otp}`);
-        await transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.log(`Email sending error: ${error.message}`);
-            } else {
-                console.log(`Email sent: ${info.response}`);
-            }
-        });
+        const info = await transporter.sendMail(mailOptions); // Use await
+        console.log(`Email sent: ${info.response}`);
         res.json({ message: 'Signup successful - check your email for the OTP' });
     } catch (err) {
+        console.log(`Error: ${err.message}`);
         res.status(400).json({ error: err.message });
     }
 });
-
 // Verify OTP
 app.post('/verify-otp', async (req, res) => {
     const { email, otp } = req.body;
