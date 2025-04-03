@@ -69,7 +69,7 @@ app.post('/signup', async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 });
-// Verify OTP
+// Verify 
 app.post('/verify-otp', async (req, res) => {
     const { email, otp } = req.body;
     try {
