@@ -1,304 +1,165 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
-import Select from 'react-select';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Dashboard from './Dashboard';
-import ResetPassword from './ResetPassword';
-import './App.css';
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-function App() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [token, setToken] = useState(null);
-    const [userName, setUserName] = useState('');
-    const [preferences, setPreferences] = useState([]);
-    const [userPreferences, setUserPreferences] = useState([]);
-    const [isSignup, setIsSignup] = useState(false);
-    const [message, setMessage] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showOTPForm, setShowOTPForm] = useState(false);
-    const [otp, setOtp] = useState('');
-    const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
-    const [forgotEmail, setForgotEmail] = useState('');
+const app = express();
+app.use(express.json());
+app.use(cors()); // Allow all origins for now to avoid CORS issues
 
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+// MongoDB Connection
+const mongoURI = 'mongodb+srv://mehrabjayeed715:4C86IEgB0E40Fc1n@skillvoyage.vc9by.mongodb.net/skillvoyage?retryWrites=true&w=majority&appName=SkillVoyage';
+mongoose.connect(mongoURI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.log('MongoDB error:', err));
 
-    // Predefined preferences (50-60 options)
-    const preferenceOptions = [
-        { value: 'Web Development', label: 'Web Development' },
-        { value: 'Data Science', label: 'Data Science' },
-        { value: 'Mobile Development', label: 'Mobile Development' },
-        { value: 'Graphic Design', label: 'Graphic Design' },
-        { value: 'Cybersecurity', label: 'Cybersecurity' },
-        { value: 'Cloud Computing', label: 'Cloud Computing' },
-        { value: 'Artificial Intelligence', label: 'Artificial Intelligence' },
-        { value: 'Machine Learning', label: 'Machine Learning' },
-        { value: 'Blockchain', label: 'Blockchain' },
-        { value: 'Game Development', label: 'Game Development' },
-        { value: 'UI/UX Design', label: 'UI/UX Design' },
-        { value: 'Digital Marketing', label: 'Digital Marketing' },
-        { value: 'Photography', label: 'Photography' },
-        { value: 'Video Editing', label: 'Video Editing' },
-        { value: 'Animation', label: 'Animation' },
-        { value: '3D Modeling', label: '3D Modeling' },
-        { value: 'Software Engineering', label: 'Software Engineering' },
-        { value: 'DevOps', label: 'DevOps' },
-        { value: 'Database Management', label: 'Database Management' },
-        { value: 'Networking', label: 'Networking' },
-        { value: 'Ethical Hacking', label: 'Ethical Hacking' },
-        { value: 'Python Programming', label: 'Python Programming' },
-        { value: 'Java Programming', label: 'Java Programming' },
-        { value: 'C++ Programming', label: 'C++ Programming' },
-        { value: 'JavaScript Programming', label: 'JavaScript Programming' },
-        { value: 'Ruby Programming', label: 'Ruby Programming' },
-        { value: 'PHP Programming', label: 'PHP Programming' },
-        { value: 'SQL', label: 'SQL' },
-        { value: 'NoSQL', label: 'NoSQL' },
-        { value: 'Big Data', label: 'Big Data' },
-        { value: 'IoT', label: 'IoT' },
-        { value: 'Robotics', label: 'Robotics' },
-        { value: 'Augmented Reality', label: 'Augmented Reality' },
-        { value: 'Virtual Reality', label: 'Virtual Reality' },
-        { value: 'App Development', label: 'App Development' },
-        { value: 'Web Design', label: 'Web Design' },
-        { value: 'SEO', label: 'SEO' },
-        { value: 'Content Writing', label: 'Content Writing' },
-        { value: 'Copywriting', label: 'Copywriting' },
-        { value: 'Social Media Marketing', label: 'Social Media Marketing' },
-        { value: 'Email Marketing', label: 'Email Marketing' },
-        { value: 'Business Analytics', label: 'Business Analytics' },
-        { value: 'Finance', label: 'Finance' },
-        { value: 'Accounting', label: 'Accounting' },
-        { value: 'Project Management', label: 'Project Management' },
-        { value: 'Leadership', label: 'Leadership' },
-        { value: 'Entrepreneurship', label: 'Entrepreneurship' },
-        { value: 'Public Speaking', label: 'Public Speaking' },
-        { value: 'Creative Writing', label: 'Creative Writing' },
-        { value: 'Music Production', label: 'Music Production' },
-        { value: 'Film Making', label: 'Film Making' },
-        { value: 'Cooking', label: 'Cooking' },
-        { value: 'Fitness', label: 'Fitness' },
-        { value: 'Yoga', label: 'Yoga' },
-        { value: 'Meditation', label: 'Meditation' },
-        { value: 'Language Learning', label: 'Language Learning' },
-        { value: 'History', label: 'History' },
-        { value: 'Psychology', label: 'Psychology' },
-        { value: 'Philosophy', label: 'Philosophy' },
-    ];
+// User Schema
+const UserSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, unique: true, required: true },
+    password: String,
+    role: String,
+    preferences: [String],
+    isVerified: { type: Boolean, default: false },
+    otp: String, // Store OTP
+    otpExpiry: Date, // OTP expiry time
+    resetToken: String,
+    resetTokenExpiry: Date
+});
+const User = mongoose.model('User', UserSchema);
 
-    const signup = async (e) => {
-        e.preventDefault();
-        try {
-            const selectedPreferences = preferences.map(p => p.value);
-            const res = await axios.post(`${backendUrl}/signup`, { name, email, password, preferences: selectedPreferences });
-            setMessage(res.data.message);
-            setShowOTPForm(true);
-        } catch (err) {
-            setMessage(err.response?.data?.error || 'Signup failed');
+// Email Setup (using Gmail)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+// Generate a 6-digit OTP
+const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+};
+
+// Signup with OTP Verification
+app.post('/signup', async (req, res) => {
+    const { name, email, password, preferences } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otp = generateOTP();
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+    const user = new User({ name, email, password: hashedPassword, role: 'user', preferences, otp, otpExpiry });
+
+    try {
+        await user.save();
+        const mailOptions = {
+            to: email,
+            subject: 'Verify Your SkillVoyage Account with OTP',
+            html: `Your OTP for SkillVoyage account verification is <b>${otp}</b>. It expires in 10 minutes.`
+        };
+        console.log(`Sending OTP email to ${email}: ${otp}`);
+        await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(`Email sending error: ${error.message}`);
+            } else {
+                console.log(`Email sent: ${info.response}`);
+            }
+        });
+        res.json({ message: 'Signup successful - check your email for the OTP' });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// Verify OTP
+app.post('/verify-otp', async (req, res) => {
+    const { email, otp } = req.body;
+    try {
+        const user = await User.findOne({ email, otp, otpExpiry: { $gt: Date.now() } });
+        if (!user) {
+            console.log(`Invalid or expired OTP for ${email}`);
+            return res.status(400).json({ error: 'Invalid or expired OTP' });
         }
-    };
+        user.isVerified = true;
+        user.otp = null;
+        user.otpExpiry = null;
+        await user.save();
+        console.log(`Email verified for ${email}`);
+        res.json({ message: 'Email verified - you can now login' });
+    } catch (err) {
+        console.log(`OTP verification error: ${err.message}`);
+        res.status(400).json({ error: 'Verification failed' });
+    }
+});
 
-    const verifyOTP = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post(`${backendUrl}/verify-otp`, { email, otp });
-            setMessage(res.data.message);
-            setShowOTPForm(false);
-            setIsSignup(false);
-        } catch (err) {
-            setMessage(err.response?.data?.error || 'OTP verification failed');
-        }
-    };
+// Login with JWT
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        console.log(`User not found: ${email}`);
+        return res.status(401).json({ error: 'Invalid credentials or email not verified' });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+        console.log(`Password mismatch for ${email}`);
+        return res.status(401).json({ error: 'Invalid credentials or email not verified' });
+    }
+    if (!user.isVerified) {
+        console.log(`Email not verified for ${email}`);
+        return res.status(401).json({ error: 'Invalid credentials or email not verified' });
+    }
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '1h' });
+    res.json({ token, userId: user._id, name: user.name, preferences: user.preferences });
+});
 
-    const login = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post(`${backendUrl}/login`, { email, password });
-            setToken(res.data.token);
-            setUserName(res.data.name);
-            setUserPreferences(res.data.preferences);
-            setMessage('Logged in!');
-        } catch (err) {
-            setMessage(err.response?.data?.error || 'Login failed');
-        }
-    };
+// Forgot Password
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const forgotPassword = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post(`${backendUrl}/forgot-password`, { email: forgotEmail });
-            setMessage(res.data.message);
-            setShowForgotPasswordForm(false);
-            setForgotEmail('');
-        } catch (err) {
-            setMessage(err.response?.data?.error || 'Reset failed');
-        }
-    };
+    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '15m' });
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+    await user.save();
 
-    return (
-        <Router>
-            <Routes>
-                <Route
-                    path="/"
-                    element={
-                        !token ? (
-                            <div className="container">
-                                <div className="auth-card">
-                                    <div className="logo">
-                                        <img src="/logo.png" alt="SkillVoyage Logo" className="logo-image" />
-                                        SkillVoyage
-                                    </div>
-                                    {showOTPForm ? (
-                                        <>
-                                            <h2>Verify OTP</h2>
-                                            {message && <p className="message">{message}</p>}
-                                            <form onSubmit={verifyOTP}>
-                                                <div className="input-group">
-                                                    <FaEnvelope className="input-icon" />
-                                                    <input
-                                                        type="email"
-                                                        value={email}
-                                                        onChange={(e) => setEmail(e.target.value)}
-                                                        placeholder="Email"
-                                                        required
-                                                        disabled
-                                                    />
-                                                </div>
-                                                <div className="input-group">
-                                                    <FaLock className="input-icon" />
-                                                    <input
-                                                        type="text"
-                                                        value={otp}
-                                                        onChange={(e) => setOtp(e.target.value)}
-                                                        placeholder="Enter OTP"
-                                                        required
-                                                    />
-                                                </div>
-                                                <button type="submit">Verify OTP</button>
-                                            </form>
-                                        </>
-                                    ) : showForgotPasswordForm ? (
-                                        <>
-                                            <h2>Forgot Password</h2>
-                                            {message && <p className="message">{message}</p>}
-                                            <form onSubmit={forgotPassword}>
-                                                <div className="input-group">
-                                                    <FaEnvelope className="input-icon" />
-                                                    <input
-                                                        type="email"
-                                                        value={forgotEmail}
-                                                        onChange={(e) => setForgotEmail(e.target.value)}
-                                                        placeholder="Enter your email"
-                                                        required
-                                                    />
-                                                </div>
-                                                <button type="submit">Send Reset Link</button>
-                                            </form>
-                                            <p
-                                                className="switch-link"
-                                                onClick={() => {
-                                                    setShowForgotPasswordForm(false);
-                                                    setMessage('');
-                                                }}
-                                            >
-                                                Back to Login
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <h2>{isSignup ? 'Sign Up' : 'Login'}</h2>
-                                            {message && <p className="message">{message}</p>}
-                                            <form onSubmit={isSignup ? signup : login}>
-                                                {isSignup && (
-                                                    <div className="input-group">
-                                                        <FaUser className="input-icon" />
-                                                        <input
-                                                            type="text"
-                                                            value={name}
-                                                            onChange={(e) => setName(e.target.value)}
-                                                            placeholder="Full Name"
-                                                            required
-                                                        />
-                                                    </div>
-                                                )}
-                                                <div className="input-group">
-                                                    <FaEnvelope className="input-icon" />
-                                                    <input
-                                                        type="email"
-                                                        value={email}
-                                                        onChange={(e) => setEmail(e.target.value)}
-                                                        placeholder="Email"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="input-group">
-                                                    <FaLock className="input-icon" />
-                                                    <input
-                                                        type={showPassword ? 'text' : 'password'}
-                                                        value={password}
-                                                        onChange={(e) => setPassword(e.target.value)}
-                                                        placeholder="Password"
-                                                        required
-                                                    />
-                                                    <span
-                                                        className="eye-icon"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                    >
-                                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                                    </span>
-                                                </div>
-                                                {isSignup && (
-                                                    <div className="preferences-group">
-                                                        <label>Select Your Preferences:</label>
-                                                        <Select
-                                                            isMulti
-                                                            options={preferenceOptions}
-                                                            value={preferences}
-                                                            onChange={setPreferences}
-                                                            placeholder="Type to search preferences..."
-                                                            className="preferences-select"
-                                                            classNamePrefix="select"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
-                                            </form>
-                                            {!isSignup && (
-                                                <button
-                                                    className="forgot-button"
-                                                    onClick={() => {
-                                                        setShowForgotPasswordForm(true);
-                                                        setMessage('');
-                                                    }}
-                                                >
-                                                    Forgot Password?
-                                                </button>
-                                            )}
-                                            <p
-                                                className="switch-link"
-                                                onClick={() => {
-                                                    setIsSignup(!isSignup);
-                                                    setMessage('');
-                                                    setShowOTPForm(false);
-                                                }}
-                                            >
-                                                {isSignup ? 'Already have an account? Login' : 'Need an account? Sign Up'}
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <Dashboard name={userName} preferences={userPreferences} />
-                        )
-                    }
-                />
-                <Route path="/reset-password" element={<ResetPassword />} />
-            </Routes>
-        </Router>
-    );
-}
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+    await transporter.sendMail({
+        to: email,
+        subject: 'Reset Your SkillVoyage Password',
+        html: `Click <a href="${resetUrl}">here</a> to reset your password. Expires in 15 minutes.`
+    });
+    res.json({ message: 'Password reset link sent to your email' });
+});
 
-export default App;
+// Reset Password (via token in URL)
+app.post('/reset-password/:token', async (req, res) => {
+    const { token } = req.params;
+    const { newPassword } = req.body;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
+        const user = await User.findOne({ email: decoded.email, resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
+        if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetToken = null;
+        user.resetTokenExpiry = null;
+        await user.save();
+        res.json({ message: 'Password reset successful - login with your new password' });
+    } catch (err) {
+        res.status(400).json({ error: 'Token expired or invalid' });
+    }
+});
+
+// Start the server
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+module.exports = app;
