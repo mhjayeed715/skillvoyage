@@ -45,7 +45,7 @@ const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 };
 
-// Signup with OTP Verification
+// Signup with OTP 
 app.post('/signup', async (req, res) => {
     const { name, email, password, preferences } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
