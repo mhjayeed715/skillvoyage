@@ -61,12 +61,15 @@ app.post('/signup', async (req, res) => {
             html: `Your OTP for SkillVoyage account verification is <b>${otp}</b>. It expires in 10 minutes.`
         };
         console.log(`Sending OTP email to ${email}: ${otp}`);
-        const info = await transporter.sendMail(mailOptions); // Use await
+        const info = await transporter.sendMail(mailOptions);
         console.log(`Email sent: ${info.response}`);
         res.json({ message: 'Signup successful - check your email for the OTP' });
     } catch (err) {
+        if (err.code === 11000 && err.keyPattern?.email) {
+            return res.status(400).json({ error: 'Email already exists. Please use a different email or log in.' });
+        }
         console.log(`Error: ${err.message}`);
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ error: 'Signup failed. Please try again.' });
     }
 });
 // Verify 
@@ -114,40 +117,54 @@ app.post('/login', async (req, res) => {
 // Forgot Password
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET || 'secretkey', { expiresIn: '15m' });
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
-    await user.save();
-
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
-    await transporter.sendMail({
-        to: email,
-        subject: 'Reset Your SkillVoyage Password',
-        html: `Click <a href="${resetUrl}">here</a> to reset your password. Expires in 15 minutes.`
-    });
-    res.json({ message: 'Password reset link sent to your email' });
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpiry = Date.now() + 3600000; // 1 hour expiry
+        await user.save();
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        const mailOptions = {
+            to: email,
+            subject: 'Reset Your SkillVoyage Password',
+            html: `Click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.`,
+        };
+        console.log(`Sending reset email to ${email}: ${resetLink}`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`Email sent: ${info.response}`);
+        res.json({ message: 'Password reset email sent' });
+    } catch (err) {
+        console.log(`Error: ${err.message}`);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
 });
 
-// Reset Password (via token in URL)
-app.post('/reset-password/:token', async (req, res) => {
-    const { token } = req.params;
-    const { newPassword } = req.body;
+// Reset Password 
+app.post('/reset-password', async (req, res) => {
+    const { token, newPassword, confirmPassword } = req.body;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secretkey');
-        const user = await User.findOne({ email: decoded.email, resetToken: token, resetTokenExpiry: { $gt: Date.now() } });
-        if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
-
-        user.password = await bcrypt.hash(newPassword, 10);
-        user.resetToken = null;
-        user.resetTokenExpiry = null;
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ error: 'Passwords do not match' });
+        }
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpiry: { $gt: Date.now() },
+        });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid or expired token' });
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpiry = undefined;
         await user.save();
-        res.json({ message: 'Password reset successful - login with your new password' });
+        res.json({ message: 'Password reset successful' });
     } catch (err) {
-        res.status(400).json({ error: 'Token expired or invalid' });
+        console.log(`Error: ${err.message}`);
+        res.status(500).json({ error: 'Something went wrong' });
     }
 });
 
