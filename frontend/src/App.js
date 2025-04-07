@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import Select from 'react-select';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import ResetPassword from './ResetPassword';
 import './App.css';
@@ -22,10 +22,19 @@ function App() {
     const [otp, setOtp] = useState('');
     const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
     const [forgotEmail, setForgotEmail] = useState('');
+    const navigate = useNavigate();
 
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
-    // Predefined preferences (50-60 options)
+    // Checking for existing token on app load
+    useEffect(() => {
+        const storedToken = localStorage.getItem('token');
+        if (storedToken) {
+            setToken(storedToken);
+        }
+    }, []);
+
+    // Predefined preferences
     const preferenceOptions = [
         { value: 'Web Development', label: 'Web Development' },
         { value: 'Data Science', label: 'Data Science' },
@@ -118,9 +127,11 @@ function App() {
         try {
             const res = await axios.post(`${backendUrl}/login`, { email, password });
             setToken(res.data.token);
+            localStorage.setItem('token', res.data.token);
             setUserName(res.data.name);
             setUserPreferences(res.data.preferences);
             setMessage('Logged in!');
+            navigate('/dashboard');
         } catch (err) {
             setMessage(err.response?.data?.error || 'Login failed');
         }
@@ -296,6 +307,7 @@ function App() {
                         )
                     }
                 />
+                <Route path="/dashboard" element={<Dashboard name={userName} preferences={userPreferences} />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
         </Router>

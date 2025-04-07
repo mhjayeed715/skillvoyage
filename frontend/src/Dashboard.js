@@ -8,7 +8,6 @@ const contentData = {
     'Graphic Design': ['Photoshop Essentials', 'Illustrator for Beginners', 'UI/UX Design Principles'],
     'Cybersecurity': ['Ethical Hacking 101', 'Network Security Basics', 'Cyber Threat Analysis'],
     'Cloud Computing': ['AWS Fundamentals', 'Azure for Beginners', 'Google Cloud Essentials'],
-    // Add more categories and content as needed
 };
 
 function Dashboard({ name, preferences }) {

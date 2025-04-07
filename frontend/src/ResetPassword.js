@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaLock } from 'react-icons/fa';
 import './ResetPassword.css';
@@ -10,12 +10,17 @@ function ResetPassword() {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
     const query = new URLSearchParams(location.search);
     const token = query.get('token');
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
+        if (!token) {
+            setError('Invalid reset link');
+            return;
+        }
         try {
             const res = await axios.post(`${backendUrl}/reset-password`, {
                 token,
@@ -24,6 +29,7 @@ function ResetPassword() {
             });
             setMessage(res.data.message);
             setError('');
+            setTimeout(() => navigate('/'), 3000); // Redirect to login after 3 seconds
         } catch (err) {
             setError(err.response?.data?.error || 'Reset failed');
             setMessage('');
@@ -63,6 +69,11 @@ function ResetPassword() {
                     </div>
                     <button type="submit">Reset Password</button>
                 </form>
+                {message && (
+                    <p className="redirect-message">
+                        Redirecting to login in 3 seconds... or <a href="/">click here</a>.
+                    </p>
+                )}
             </div>
         </div>
     );
