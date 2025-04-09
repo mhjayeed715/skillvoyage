@@ -9,12 +9,7 @@ require('dotenv').config();
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://skillvoyage-frontend-86nb9ux91-mhjayeed715s-projects.vercel.app'
-    ]
-}));
+app.use(cors());
 
 // MongoDB Connection
 const mongoURI = 'mongodb+srv://mehrabjayeed715:4C86IEgB0E40Fc1n@skillvoyage.vc9by.mongodb.net/skillvoyage?retryWrites=true&w=majority&appName=SkillVoyage';

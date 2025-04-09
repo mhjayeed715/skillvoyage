@@ -8,6 +8,7 @@ function ResetPassword() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState('');
     const [error, setError] = useState('');
     const location = useLocation();
     const navigate = useNavigate();
@@ -28,11 +29,13 @@ function ResetPassword() {
                 confirmPassword,
             });
             setMessage(res.data.message);
+            setMessageType('success');
             setError('');
-            setTimeout(() => navigate('/'), 3000); // Redirect to login after 3 seconds
+            setTimeout(() => navigate('/'), 3000);
         } catch (err) {
             setError(err.response?.data?.error || 'Reset failed');
             setMessage('');
+            setMessageType('');
         }
     };
 
@@ -40,11 +43,16 @@ function ResetPassword() {
         <div className="reset-container">
             <div className="reset-card">
                 <div className="logo">
-                    <img src="/logo.png" alt="SkillVoyage Logo" className="logo-image" />
+                    <img
+                        src="/logo.png"
+                        alt="SkillVoyage Logo"
+                        className="logo-image"
+                        onError={(e) => (e.target.style.display = 'none')}
+                    />
                     SkillVoyage
                 </div>
                 <h2>Reset Password</h2>
-                {message && <p className="message">{message}</p>}
+                {message && <p className={`message ${messageType}`}>{message}</p>}
                 {error && <p className="error">{error}</p>}
                 <form onSubmit={handleResetPassword}>
                     <div className="input-group">

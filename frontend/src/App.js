@@ -2,10 +2,30 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import Select from 'react-select';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import ResetPassword from './ResetPassword';
 import './App.css';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+    state = { hasError: false };
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.error('Error caught by ErrorBoundary:', error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <h1>Something went wrong. Please refresh the page or try again later.</h1>;
+        }
+        return this.props.children;
+    }
+}
 
 function App() {
     const [name, setName] = useState('');
@@ -17,6 +37,7 @@ function App() {
     const [userPreferences, setUserPreferences] = useState([]);
     const [isSignup, setIsSignup] = useState(false);
     const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState(''); // Add state for message type
     const [showPassword, setShowPassword] = useState(false);
     const [showOTPForm, setShowOTPForm] = useState(false);
     const [otp, setOtp] = useState('');
@@ -26,7 +47,7 @@ function App() {
 
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
 
-    // Checking for existing token on app load
+    // Check for existing token on app load
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         if (storedToken) {
@@ -104,9 +125,11 @@ function App() {
             const selectedPreferences = preferences.map(p => p.value);
             const res = await axios.post(`${backendUrl}/signup`, { name, email, password, preferences: selectedPreferences });
             setMessage(res.data.message);
+            setMessageType('success');
             setShowOTPForm(true);
         } catch (err) {
             setMessage(err.response?.data?.error || 'Signup failed');
+            setMessageType('error');
         }
     };
 
@@ -115,10 +138,12 @@ function App() {
         try {
             const res = await axios.post(`${backendUrl}/verify-otp`, { email, otp });
             setMessage(res.data.message);
+            setMessageType('success');
             setShowOTPForm(false);
             setIsSignup(false);
         } catch (err) {
             setMessage(err.response?.data?.error || 'OTP verification failed');
+            setMessageType('error');
         }
     };
 
@@ -131,9 +156,11 @@ function App() {
             setUserName(res.data.name);
             setUserPreferences(res.data.preferences);
             setMessage('Logged in!');
+            setMessageType('success');
             navigate('/dashboard');
         } catch (err) {
             setMessage(err.response?.data?.error || 'Login failed');
+            setMessageType('error');
         }
     };
 
@@ -142,15 +169,17 @@ function App() {
         try {
             const res = await axios.post(`${backendUrl}/forgot-password`, { email: forgotEmail });
             setMessage(res.data.message);
+            setMessageType('success');
             setShowForgotPasswordForm(false);
             setForgotEmail('');
         } catch (err) {
             setMessage(err.response?.data?.error || 'Reset failed');
+            setMessageType('error');
         }
     };
 
     return (
-        <Router>
+        <ErrorBoundary>
             <Routes>
                 <Route
                     path="/"
@@ -159,13 +188,18 @@ function App() {
                             <div className="container">
                                 <div className="auth-card">
                                     <div className="logo">
-                                        <img src="/logo.png" alt="SkillVoyage Logo" className="logo-image" />
+                                        <img
+                                            src="/logo.png"
+                                            alt="SkillVoyage Logo"
+                                            className="logo-image"
+                                            onError={(e) => (e.target.style.display = 'none')}
+                                        />
                                         SkillVoyage
                                     </div>
                                     {showOTPForm ? (
                                         <>
                                             <h2>Verify OTP</h2>
-                                            {message && <p className="message">{message}</p>}
+                                            {message && <p className={`message ${messageType}`}>{message}</p>}
                                             <form onSubmit={verifyOTP}>
                                                 <div className="input-group">
                                                     <FaEnvelope className="input-icon" />
@@ -194,7 +228,7 @@ function App() {
                                     ) : showForgotPasswordForm ? (
                                         <>
                                             <h2>Forgot Password</h2>
-                                            {message && <p className="message">{message}</p>}
+                                            {message && <p className={`message ${messageType}`}>{message}</p>}
                                             <form onSubmit={forgotPassword}>
                                                 <div className="input-group">
                                                     <FaEnvelope className="input-icon" />
@@ -213,6 +247,7 @@ function App() {
                                                 onClick={() => {
                                                     setShowForgotPasswordForm(false);
                                                     setMessage('');
+                                                    setMessageType('');
                                                 }}
                                             >
                                                 Back to Login
@@ -221,7 +256,7 @@ function App() {
                                     ) : (
                                         <>
                                             <h2>{isSignup ? 'Sign Up' : 'Login'}</h2>
-                                            {message && <p className="message">{message}</p>}
+                                            {message && <p className={`message ${messageType}`}>{message}</p>}
                                             <form onSubmit={isSignup ? signup : login}>
                                                 {isSignup && (
                                                     <div className="input-group">
@@ -283,6 +318,7 @@ function App() {
                                                     onClick={() => {
                                                         setShowForgotPasswordForm(true);
                                                         setMessage('');
+                                                        setMessageType('');
                                                     }}
                                                 >
                                                     Forgot Password?
@@ -293,6 +329,7 @@ function App() {
                                                 onClick={() => {
                                                     setIsSignup(!isSignup);
                                                     setMessage('');
+                                                    setMessageType('');
                                                     setShowOTPForm(false);
                                                 }}
                                             >
@@ -310,7 +347,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard name={userName} preferences={userPreferences} />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
-        </Router>
+        </ErrorBoundary>
     );
 }
 

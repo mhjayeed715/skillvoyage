@@ -1,42 +1,97 @@
 import React from 'react';
+import { FaBook, FaStar, FaUserEdit, FaSearch, FaUser } from 'react-icons/fa';
 import './Dashboard.css';
 
-const contentData = {
-    'Web Development': ['HTML & CSS Basics', 'JavaScript for Beginners', 'React Mastery'],
-    'Data Science': ['Python for Data Science', 'Machine Learning 101', 'Data Visualization'],
-    'Mobile Development': ['Flutter Basics', 'React Native Guide', 'iOS Development with Swift'],
-    'Graphic Design': ['Photoshop Essentials', 'Illustrator for Beginners', 'UI/UX Design Principles'],
-    'Cybersecurity': ['Ethical Hacking 101', 'Network Security Basics', 'Cyber Threat Analysis'],
-    'Cloud Computing': ['AWS Fundamentals', 'Azure for Beginners', 'Google Cloud Essentials'],
-};
-
 function Dashboard({ name, preferences }) {
+    // Ensure preferences is an array and name is a string
+    const safePreferences = Array.isArray(preferences) ? preferences : [];
+    const safeName = typeof name === 'string' ? name : 'User';
+
+    // Recommended courses based on preferences (static mapping for now)
+    const recommendedCourses = {
+        'Data Science': ['Python for Data Science', 'Data Visualization with Tableau', 'Statistics for Data Science'],
+        'Web Development': ['React for Beginners', 'Node.js Essentials', 'CSS Mastery'],
+        'Machine Learning': ['Intro to Machine Learning', 'Deep Learning with TensorFlow', 'AI Fundamentals'],
+        'Cybersecurity': ['Ethical Hacking Basics', 'Network Security', 'Cyber Threat Analysis'],
+    };
+
+    // Popular topics (static list)
+    const popularTopics = [
+        'Web Development',
+        'Cybersecurity',
+        'UI/UX Design',
+        'Cloud Computing',
+        'Blockchain'
+    ];
+
     return (
-        <div className="dashboard">
+        <div className="dashboard-container">
             <div className="dashboard-header">
-                <h1>Welcome, {name}!</h1>
-                <p>Explore content tailored to your interests.</p>
+                <h1>Welcome, {safeName}!</h1>
+                <p>Explore your learning journey with SkillVoyage</p>
             </div>
-            {preferences.length > 0 ? (
-                preferences.map((pref, index) => (
-                    <div key={index} className="content-section">
-                        <h2>{pref}</h2>
-                        <div className="content-list">
-                            {contentData[pref] ? (
-                                contentData[pref].map((item, idx) => (
-                                    <div key={idx} className="content-item">
-                                        {item}
+
+            <div className="dashboard-section">
+                <h2>Your Preferences</h2>
+                <div className="preferences-list">
+                    {safePreferences.length > 0 ? (
+                        safePreferences.map((pref, index) => (
+                            <span key={index} className="preference-tag">
+                                {pref}
+                            </span>
+                        ))
+                    ) : (
+                        <p>No preferences selected.</p>
+                    )}
+                </div>
+            </div>
+
+            <div className="dashboard-section">
+                <h2>Recommended Courses <FaBook className="section-icon" /></h2>
+                <div className="courses-list">
+                    {safePreferences.length > 0 ? (
+                        safePreferences.map((pref, index) => (
+                            recommendedCourses[pref] ? (
+                                recommendedCourses[pref].map((course, idx) => (
+                                    <div key={`${index}-${idx}`} className="course-card">
+                                        <h3>{course}</h3>
+                                        <button className="action-button">Start Learning</button>
                                     </div>
                                 ))
-                            ) : (
-                                <p>No content available for {pref} yet.</p>
-                            )}
+                            ) : null
+                        ))
+                    ) : (
+                        <p>No recommendations available. Add preferences to see courses!</p>
+                    )}
+                </div>
+            </div>
+
+            <div className="dashboard-section">
+                <h2>Popular Topics <FaStar className="section-icon" /></h2>
+                <div className="topics-list">
+                    {popularTopics.map((topic, index) => (
+                        <div key={index} className="topic-card">
+                            <h3>{topic}</h3>
+                            <button className="action-button">Explore</button>
                         </div>
-                    </div>
-                ))
-            ) : (
-                <p>Please select some preferences to see personalized content.</p>
-            )}
+                    ))}
+                </div>
+            </div>
+
+            <div className="dashboard-section">
+                <h2>Quick Links</h2>
+                <div className="quick-links">
+                    <button className="link-button">
+                        <FaSearch /> Explore More Topics
+                    </button>
+                    <button className="link-button">
+                        <FaUserEdit /> Update Preferences
+                    </button>
+                    <button className="link-button">
+                        <FaUser /> View Profile
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
