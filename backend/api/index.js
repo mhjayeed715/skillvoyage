@@ -14,6 +14,8 @@ app.use(cors({
     origin: '*', 
 }));
 
+app.options("*", cors());
+
 // MongoDB Connection
 const mongoURI = 'mongodb+srv://mehrabjayeed715:4C86IEgB0E40Fc1n@skillvoyage.vc9by.mongodb.net/skillvoyage?retryWrites=true&w=majority&appName=SkillVoyage';
 mongoose.connect(mongoURI)
