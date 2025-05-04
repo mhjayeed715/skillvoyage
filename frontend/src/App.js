@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 import Select from 'react-select';
-import { Route, Routes, useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
-import ResetPassword from './ResetPassword';
+import { BrowserRouter as Router, Route, Routes, useNavigate, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Dashboard from './pages/Dashboard';
+import ResetPassword from './pages/ResetPassword';
+import AdminPanel from './pages/AdminPanel';
+import Courses from './pages/Courses';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import './App.css';
 
-// Error Boundary Component
 class ErrorBoundary extends React.Component {
     state = { hasError: false };
 
@@ -21,41 +25,78 @@ class ErrorBoundary extends React.Component {
 
     render() {
         if (this.state.hasError) {
-            return <h1>Something went wrong. Please refresh the page or try again later.</h1>;
+            return <h1>Something went wrong. Please try again later.</h1>;
         }
         return this.props.children;
     }
 }
 
-function App() {
+function AppContent() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [token, setToken] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token') || null);
     const [userName, setUserName] = useState('');
+    const [userEmail, setUserEmail] = useState('');
     const [preferences, setPreferences] = useState([]);
     const [userPreferences, setUserPreferences] = useState([]);
+    const [role, setRole] = useState('user');
     const [isSignup, setIsSignup] = useState(false);
     const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState(''); // Add state for message type
+    const [messageType, setMessageType] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showOTPForm, setShowOTPForm] = useState(false);
     const [otp, setOtp] = useState('');
     const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
     const [forgotEmail, setForgotEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+    console.log('Backend URL:', backendUrl);
+    console.log('Initial Token:', token);
 
-    // Check for existing token on app load
     useEffect(() => {
+        console.log('useEffect triggered');
         const storedToken = localStorage.getItem('token');
         if (storedToken) {
-            setToken(storedToken);
+            setIsLoading(true);
+            console.log('Fetching user data with token:', storedToken);
+            axios
+                .get(`${backendUrl}/api/user`, {
+                    headers: { Authorization: `Bearer ${storedToken}` },
+                })
+                .then((res) => {
+                    console.log('User Data:', res.data);
+                    setUserName(res.data.name || '');
+                    setUserEmail(res.data.email || '');
+                    setUserPreferences(res.data.preferences || []);
+                    setRole(res.data.role || 'user');
+                    setToken(storedToken);
+                })
+                .catch((err) => {
+                    console.error('User fetch error:', err.message);
+                    if (err.response) {
+                        console.error('Response data:', err.response.data);
+                        console.error('Response status:', err.response.status);
+                    }
+                    localStorage.removeItem('token');
+                    setToken(null);
+                    setUserName('');
+                    setUserEmail('');
+                    setUserPreferences([]);
+                    setRole('user');
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                    console.log('Loading finished');
+                });
+        } else {
+            setIsLoading(false);
+            console.log('No token found, loading finished');
         }
-    }, []);
+    }, [backendUrl]);
 
-    // Predefined preferences
     const preferenceOptions = [
         { value: 'Web Development', label: 'Web Development' },
         { value: 'Data Science', label: 'Data Science' },
@@ -116,238 +157,275 @@ function App() {
         { value: 'Interior Design', label: 'Interior Design' },
         { value: 'Cooking', label: 'Cooking' },
         { value: 'Gardening', label: 'Gardening' },
-        { value: 'Fitness Training', label: 'Fitness Training' }
+        { value: 'Fitness Training', label: 'Fitness Training' },
     ];
 
     const signup = async (e) => {
         e.preventDefault();
+        console.log('Signup initiated', { name, email, password, preferences });
         try {
-            const selectedPreferences = preferences.map(p => p.value);
-            const res = await axios.post(`${backendUrl}/signup`, { name, email, password, preferences: selectedPreferences });
+            const selectedPreferences = preferences.map((p) => p.value);
+            const res = await axios.post(`${backendUrl}/api/signup`, {
+                name,
+                email,
+                password,
+                preferences: selectedPreferences,
+            });
             setMessage(res.data.message);
             setMessageType('success');
             setShowOTPForm(true);
+            console.log('Signup success:', res.data);
         } catch (err) {
             setMessage(err.response?.data?.error || 'Signup failed');
             setMessageType('error');
-        }
-    };
-
-    const verifyOTP = async (e) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post(`${backendUrl}/verify-otp`, { email, otp });
-            setMessage(res.data.message);
-            setMessageType('success');
-            setShowOTPForm(false);
-            setIsSignup(false);
-        } catch (err) {
-            setMessage(err.response?.data?.error || 'OTP verification failed');
-            setMessageType('error');
+            console.error('Signup error:', err.message);
         }
     };
 
     const login = async (e) => {
         e.preventDefault();
+        console.log('Login initiated', { email, password });
         try {
-            const res = await axios.post(`${backendUrl}/login`, { email, password });
-            setToken(res.data.token);
-            localStorage.setItem('token', res.data.token);
-            setUserName(res.data.name);
-            setUserPreferences(res.data.preferences);
+            const res = await axios.post(`${backendUrl}/api/login`, { email, password });
+            const newToken = res.data.token;
+            setToken(newToken);
+            localStorage.setItem('token', newToken);
+            setUserName(res.data.name || '');
+            setUserEmail(res.data.email || '');
+            setUserPreferences(res.data.preferences || []);
+            setRole(res.data.role || 'user');
             setMessage('Logged in!');
             setMessageType('success');
-            navigate('/dashboard');
+            console.log('Login success:', res.data);
         } catch (err) {
             setMessage(err.response?.data?.error || 'Login failed');
             setMessageType('error');
+            console.error('Login error:', err.message);
         }
     };
 
     const forgotPassword = async (e) => {
         e.preventDefault();
+        console.log('Forgot password initiated', { forgotEmail });
         try {
-            const res = await axios.post(`${backendUrl}/forgot-password`, { email: forgotEmail });
+            const res = await axios.post(`${backendUrl}/api/forgot-password`, { email: forgotEmail });
             setMessage(res.data.message);
             setMessageType('success');
             setShowForgotPasswordForm(false);
             setForgotEmail('');
+            console.log('Forgot password success:', res.data);
         } catch (err) {
             setMessage(err.response?.data?.error || 'Reset failed');
             setMessageType('error');
+            console.error('Forgot password error:', err.message);
         }
     };
 
+    const verifyOTP = async (e) => {
+        e.preventDefault();
+        console.log('Verify OTP initiated', { email, otp });
+        try {
+            const res = await axios.post(`${backendUrl}/api/verify-otp`, { email, otp });
+            setMessage(res.data.message);
+            setMessageType('success');
+            setShowOTPForm(false);
+            setIsSignup(false);
+            console.log('OTP verification success:', res.data);
+        } catch (err) {
+            setMessage(err.response?.data?.error || 'OTP verification failed');
+            setMessageType('error');
+            console.error('OTP verification error:', err.message);
+        }
+    };
+
+    console.log('Rendering AppContent, isLoading:', isLoading, 'token:', token);
+
+    if (isLoading) return <div className="container"><div className="auth-card">Loading...</div></div>;
+
     return (
         <ErrorBoundary>
-            <Routes>
-                <Route
-                    path="/"
-                    element={
-                        !token ? (
-                            <div className="container">
-                                <div className="auth-card">
-                                    <div className="logo">
-                                        <img
-                                            src="/logo.png"
-                                            alt="SkillVoyage Logo"
-                                            className="logo-image"
-                                            onError={(e) => (e.target.style.display = 'none')}
+            {token ? (
+                <div className="dashboard-container">
+                    <Navbar role={role} email={userEmail} setToken={setToken} />
+                    <div className="dashboard-content">
+                        <Routes>
+                            <Route path="/dashboard" element={<Dashboard name={userName} preferences={userPreferences} />} />
+                            <Route path="/courses" element={<Courses />} />
+                            <Route path="/profile" element={<Profile name={userName} email={userEmail} preferences={userPreferences} />} />
+                            <Route path="/settings" element={<Settings preferences={userPreferences} setUserPreferences={setUserPreferences} />} />
+                            <Route path="/admin" element={role === 'admin' ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
+                    </div>
+                </div>
+            ) : (
+                <div className="container">
+                    <div className="auth-card">
+                        <div className="logo">
+                            <img
+                                src="/logo.png"
+                                alt="SkillVoyage Logo"
+                                className="logo-image"
+                                onError={(e) => (e.target.style.display = 'none')}
+                            />
+                            SkillVoyage
+                        </div>
+                        {showOTPForm ? (
+                            <>
+                                <h2>Verify OTP</h2>
+                                {message && <p className={`message ${messageType}`}>{message}</p>}
+                                <form onSubmit={verifyOTP}>
+                                    <div className="input-group">
+                                        <FaEnvelope className="input-icon" />
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="Email"
+                                            required
+                                            disabled
                                         />
-                                        SkillVoyage
                                     </div>
-                                    {showOTPForm ? (
-                                        <>
-                                            <h2>Verify OTP</h2>
-                                            {message && <p className={`message ${messageType}`}>{message}</p>}
-                                            <form onSubmit={verifyOTP}>
-                                                <div className="input-group">
-                                                    <FaEnvelope className="input-icon" />
-                                                    <input
-                                                        type="email"
-                                                        value={email}
-                                                        onChange={(e) => setEmail(e.target.value)}
-                                                        placeholder="Email"
-                                                        required
-                                                        disabled
-                                                    />
-                                                </div>
-                                                <div className="input-group">
-                                                    <FaLock className="input-icon" />
-                                                    <input
-                                                        type="text"
-                                                        value={otp}
-                                                        onChange={(e) => setOtp(e.target.value)}
-                                                        placeholder="Enter OTP"
-                                                        required
-                                                    />
-                                                </div>
-                                                <button type="submit">Verify OTP</button>
-                                            </form>
-                                        </>
-                                    ) : showForgotPasswordForm ? (
-                                        <>
-                                            <h2>Forgot Password</h2>
-                                            {message && <p className={`message ${messageType}`}>{message}</p>}
-                                            <form onSubmit={forgotPassword}>
-                                                <div className="input-group">
-                                                    <FaEnvelope className="input-icon" />
-                                                    <input
-                                                        type="email"
-                                                        value={forgotEmail}
-                                                        onChange={(e) => setForgotEmail(e.target.value)}
-                                                        placeholder="Enter your email"
-                                                        required
-                                                    />
-                                                </div>
-                                                <button type="submit">Send Reset Link</button>
-                                            </form>
-                                            <p
-                                                className="switch-link"
-                                                onClick={() => {
-                                                    setShowForgotPasswordForm(false);
-                                                    setMessage('');
-                                                    setMessageType('');
-                                                }}
-                                            >
-                                                Back to Login
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <h2>{isSignup ? 'Sign Up' : 'Login'}</h2>
-                                            {message && <p className={`message ${messageType}`}>{message}</p>}
-                                            <form onSubmit={isSignup ? signup : login}>
-                                                {isSignup && (
-                                                    <div className="input-group">
-                                                        <FaUser className="input-icon" />
-                                                        <input
-                                                            type="text"
-                                                            value={name}
-                                                            onChange={(e) => setName(e.target.value)}
-                                                            placeholder="Full Name"
-                                                            required
-                                                        />
-                                                    </div>
-                                                )}
-                                                <div className="input-group">
-                                                    <FaEnvelope className="input-icon" />
-                                                    <input
-                                                        type="email"
-                                                        value={email}
-                                                        onChange={(e) => setEmail(e.target.value)}
-                                                        placeholder="Email"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="input-group">
-                                                    <FaLock className="input-icon" />
-                                                    <input
-                                                        type={showPassword ? 'text' : 'password'}
-                                                        value={password}
-                                                        onChange={(e) => setPassword(e.target.value)}
-                                                        placeholder="Password"
-                                                        required
-                                                    />
-                                                    <span
-                                                        className="eye-icon"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                    >
-                                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                                    </span>
-                                                </div>
-                                                {isSignup && (
-                                                    <div className="preferences-group">
-                                                        <label>Select Your Preferences:</label>
-                                                        <Select
-                                                            isMulti
-                                                            options={preferenceOptions}
-                                                            value={preferences}
-                                                            onChange={setPreferences}
-                                                            placeholder="Type to search preferences..."
-                                                            className="preferences-select"
-                                                            classNamePrefix="select"
-                                                        />
-                                                    </div>
-                                                )}
-                                                <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
-                                            </form>
-                                            {!isSignup && (
-                                                <button
-                                                    className="forgot-button"
-                                                    onClick={() => {
-                                                        setShowForgotPasswordForm(true);
-                                                        setMessage('');
-                                                        setMessageType('');
-                                                    }}
-                                                >
-                                                    Forgot Password?
-                                                </button>
-                                            )}
-                                            <p
-                                                className="switch-link"
-                                                onClick={() => {
-                                                    setIsSignup(!isSignup);
-                                                    setMessage('');
-                                                    setMessageType('');
-                                                    setShowOTPForm(false);
-                                                }}
-                                            >
-                                                {isSignup ? 'Already have an account? Login' : 'Need an account? Sign Up'}
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                                    <div className="input-group">
+                                        <FaLock className="input-icon" />
+                                        <input
+                                            type="text"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            placeholder="Enter OTP"
+                                            required
+                                        />
+                                    </div>
+                                    <button type="submit">Verify OTP</button>
+                                </form>
+                            </>
+                        ) : showForgotPasswordForm ? (
+                            <>
+                                <h2>Forgot Password</h2>
+                                {message && <p className={`message ${messageType}`}>{message}</p>}
+                                <form onSubmit={forgotPassword}>
+                                    <div className="input-group">
+                                        <FaEnvelope className="input-icon" />
+                                        <input
+                                            type="email"
+                                            value={forgotEmail}
+                                            onChange={(e) => setForgotEmail(e.target.value)}
+                                            placeholder="Enter your email"
+                                            required
+                                        />
+                                    </div>
+                                    <button type="submit">Send Reset Link</button>
+                                </form>
+                                <p
+                                    className="switch-link"
+                                    onClick={() => {
+                                        setShowForgotPasswordForm(false);
+                                        setMessage('');
+                                        setMessageType('');
+                                    }}
+                                >
+                                    Back to Login
+                                </p>
+                            </>
                         ) : (
-                            <Dashboard name={userName} preferences={userPreferences} />
-                        )
-                    }
-                />
-                <Route path="/dashboard" element={<Dashboard name={userName} preferences={userPreferences} />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-            </Routes>
+                            <>
+                                <h2>{isSignup ? 'Sign Up' : 'Login'}</h2>
+                                {message && <p className={`message ${messageType}`}>{message}</p>}
+                                <form onSubmit={isSignup ? signup : login}>
+                                    {isSignup && (
+                                        <div className="input-group">
+                                            <FaUser className="input-icon" />
+                                            <input
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                placeholder="Full Name"
+                                                required
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="input-group">
+                                        <FaEnvelope className="input-icon" />
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="Email"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="password-group"> {/* Changed to password-group */}
+                                        <FaLock className="input-icon" />
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Password"
+                                            required
+                                        />
+                                        <span
+                                            className="eye-icon"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </span>
+                                    </div>
+                                    {isSignup && (
+                                        <div className="preferences-group">
+                                            <label>Select Your Preferences:</label>
+                                            <Select
+                                                isMulti
+                                                options={preferenceOptions}
+                                                value={preferences}
+                                                onChange={setPreferences}
+                                                placeholder="Type to search preferences..."
+                                                className="preferences-select"
+                                                classNamePrefix="select"
+                                            />
+                                        </div>
+                                    )}
+                                    <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
+                                </form>
+                                {!isSignup && (
+                                    <button
+                                        className="forgot-button"
+                                        onClick={() => {
+                                            setShowForgotPasswordForm(true);
+                                            setMessage('');
+                                            setMessageType('');
+                                        }}
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                )}
+                                <p
+                                    className="switch-link"
+                                    onClick={() => {
+                                        setIsSignup(!isSignup);
+                                        setMessage('');
+                                        setMessageType('');
+                                        setShowOTPForm(false);
+                                    }}
+                                >
+                                    {isSignup ? 'Already have an account? Login' : 'Need an account? Sign Up'}
+                                </p>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </ErrorBoundary>
+    );
+}
+
+function App() {
+    console.log('Rendering App component');
+    return (
+        <Router>
+            <AppContent />
+        </Router>
     );
 }
 

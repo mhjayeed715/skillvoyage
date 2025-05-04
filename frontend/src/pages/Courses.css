@@ -1,0 +1,27 @@
+.dashboard-content {
+    padding: 24px;
+}
+
+.courses-list {
+    margin-top: 1rem;
+}
+
+.course-item {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.course-item a {
+    color: #007bff;
+    text-decoration: none;
+    flex-grow: 1;
+}
+
+.course-item a:hover {
+    text-decoration: underline;
+}

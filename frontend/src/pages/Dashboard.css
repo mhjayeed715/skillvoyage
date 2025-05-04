@@ -1,0 +1,57 @@
+.dashboard-container {
+    display: flex;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: 24px;
+}
+
+.dashboard-section {
+    margin-bottom: 32px;
+}
+
+.dashboard-chart {
+    max-width: 500px;
+    margin: 16px 0;
+}
+
+.dashboard-badges {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: #e7f1ff;
+    border-radius: 4px;
+    color: #1a73e8;
+}
+
+.recommendations-list, .courses-list {
+    margin-top: 1rem;
+}
+
+.recommendation-item, .course-item {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.recommendation-item a, .course-item a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.recommendation-item a:hover, .course-item a:hover {
+    text-decoration: underline;
+}
+
+.admin-section {
+    margin-top: 2rem;
+}
