@@ -6,6 +6,10 @@ import './Settings.css';
 function Settings({ preferences, setUserPreferences }) {
     const [newPreferences, setNewPreferences] = useState(preferences.map(p => ({ value: p, label: p })));
 
+    useEffect(() => {
+        setNewPreferences(preferences.map(p => ({ value: p, label: p })));
+    }, [preferences]);
+
     const preferenceOptions = [
         { value: 'Web Development', label: 'Web Development' },
         { value: 'Data Science', label: 'Data Science' },
@@ -69,28 +73,35 @@ function Settings({ preferences, setUserPreferences }) {
         { value: 'Fitness Training', label: 'Fitness Training' },
     ];
 
-    // Update preferences in real-time and sync with parent
     const handlePreferenceChange = (selectedOptions) => {
         setNewPreferences(selectedOptions || []);
         const selectedValues = selectedOptions.map(p => p.value);
-        setUserPreferences(selectedValues); // Sync with parent state immediately
+        setUserPreferences(selectedValues);
     };
 
     const handleUpdatePreferences = async () => {
         const token = localStorage.getItem('token');
+        if (!token) {
+            alert('No token found. Please log in again.');
+            return;
+        }
         const selectedPreferences = newPreferences.map(p => p.value);
         try {
+            console.log('Sending PUT request to:', `${process.env.REACT_APP_BACKEND_URL}/api/user`);
+            console.log('Request body:', { preferences: selectedPreferences });
             const response = await axios.put(
-                `${process.env.REACT_APP_BACKEND_URL}/api/user`, // Changed to /api/user for self-update
+                `${process.env.REACT_APP_BACKEND_URL}/api/user`,
                 { preferences: selectedPreferences },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             if (response.status === 200) {
                 alert('Preferences updated successfully!');
+            } else {
+                throw new Error('Unexpected response status');
             }
         } catch (err) {
-            console.error('Update preferences error:', err);
-            alert('Failed to update preferences. Please try again.');
+            console.error('Update preferences error:', err.response?.data || err.message);
+            alert(`Failed to update preferences: ${err.response?.data?.error || err.message}`);
         }
     };
 
