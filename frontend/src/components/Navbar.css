@@ -1,25 +1,35 @@
 .navbar {
     width: 250px;
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     height: 100vh;
     position: fixed;
     top: 0;
     left: 0;
     padding: 1rem;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    overflow-y: auto; 
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    backdrop-filter: blur(10px);
+    animation: slideIn 0.5s ease-in-out;
+    z-index: 1000; 
+}
+
+@keyframes slideIn {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
 }
 
 .navbar-title {
     margin-bottom: 0.5rem;
+    color: #4682B4;
+    font-weight: 500;
 }
 
 .navbar-main {
     flex-grow: 1;
-    overflow-y: auto; 
+    overflow-y: auto;
 }
 
 .navbar-link {
@@ -30,23 +40,34 @@
     color: #333;
     margin-bottom: 0.5rem;
     border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .navbar-link:hover {
-    background-color: #f0f0f0;
+    background-color: #87CEEB;
+    transform: translateX(5px);
+    color: white;
 }
 
 .navbar-link[data-active="true"] {
-    background-color: #e0e0e0;
+    background: linear-gradient(90deg, #87CEEB, #4682B4);
+    color: white;
     font-weight: bold;
 }
 
 .navbar-linkIcon {
     margin-right: 0.5rem;
+    font-size: 1.2rem;
 }
 
 .navbar-footer {
-    margin-top: auto; 
+    margin-top: auto;
     padding-top: 1rem;
     border-top: 1px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        width: 200px;
+    }
 }

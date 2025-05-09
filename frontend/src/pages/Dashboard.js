@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { FaTrophy } from 'react-icons/fa';
+import { FaTrophy, FaSpinner } from 'react-icons/fa';
 import axios from 'axios';
 import Select from 'react-select';
 import './Dashboard.css';
@@ -30,7 +30,6 @@ function Dashboard({ name, preferences }) {
             setError(null);
 
             try {
-                // Fetch Dashboard Data
                 const dashboardResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/dashboard`, {
                     headers: { Authorization: `Bearer ${token}` },
                     cache: 'no-store',
@@ -42,7 +41,6 @@ function Dashboard({ name, preferences }) {
                     throw new Error('Failed to load dashboard data');
                 }
 
-                // Fetch Recommendations
                 const recommendationsResponse = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/recommendations`, {
                     headers: { Authorization: `Bearer ${token}` },
                     cache: 'no-store',
@@ -54,7 +52,6 @@ function Dashboard({ name, preferences }) {
                     throw new Error('Failed to load recommendations');
                 }
 
-                // Fetch Courses
                 const params = new URLSearchParams();
                 if (selectedCategory) params.append('category', selectedCategory);
                 if (searchKeyword) params.append('keyword', searchKeyword);
@@ -95,7 +92,7 @@ function Dashboard({ name, preferences }) {
         datasets: [
             {
                 data: dashboardData.goals.length ? dashboardData.goals.map(g => (g.current / (g.target || 1)) * 100) : [0],
-                backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56'],
+                backgroundColor: ['#87CEEB', '#4682B4', '#ffcd56'],
             },
         ],
     };
@@ -122,12 +119,24 @@ function Dashboard({ name, preferences }) {
         }
     };
 
-    if (loading) return <div className="dashboard-content">Loading...</div>;
+    const categoryOptions = [
+        { value: 'Web Development', label: 'Web Development' },
+        { value: 'Data Science', label: 'Data Science' },
+    ];
+
+    if (loading) return (
+        <div className="dashboard-content">
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <FaSpinner className="spin" /> Loading...
+            </div>
+        </div>
+    );
     if (error) return <div className="dashboard-content">Error: {error}</div>;
 
     return (
         <div className="dashboard-content">
-            <h1>Dashboard</h1>
+            <h1>Welcome, {name}!</h1>
+            <p>Your Preferences: {preferences.join(', ') || 'Not set'}</p>
             <div className="dashboard-section">
                 <h2>Progress</h2>
                 {dashboardData.progress.length ? (
@@ -186,10 +195,22 @@ function Dashboard({ name, preferences }) {
                     onChange={(e) => setSearchKeyword(e.target.value)}
                 />
                 <Select
-                    options={[{ value: 'Web Development', label: 'Web Development' }, { value: 'Data Science', label: 'Data Science' }]}
+                    options={categoryOptions}
                     onChange={(opt) => setSelectedCategory(opt ? opt.value : '')}
                     placeholder="Filter by category..."
                     isClearable
+                    styles={{
+                        control: (provided) => ({
+                            ...provided,
+                            borderRadius: '8px',
+                            borderColor: '#ddd',
+                            transition: 'border-color 0.3s ease',
+                        }),
+                        control: (provided) => ({
+                            ...provided,
+                            '&:hover': { borderColor: '#4682B4' },
+                        }),
+                    }}
                 />
                 <div className="courses-list">
                     {courses.length ? (

@@ -3,17 +3,39 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa, #c3cfe2); 
+    background: linear-gradient(135deg, rgba(135, 206, 235, 0.8), rgba(70, 130, 180, 0.8)), 
+                url('https://images.unsplash.com/photo-1507521628349-6e9b803b7b0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+    animation: gradientShift 15s ease infinite;
+    position: relative;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .auth-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.9);
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
     text-align: center;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 1s ease-in-out;
+    transition: transform 0.3s ease;
+    margin: 0 auto; 
+}
+
+.auth-card:hover {
+    transform: scale(1.02);
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 .logo {
@@ -50,6 +72,10 @@ h2 {
     box-sizing: border-box; 
 }
 
+.input-group input:focus {
+    border-color: #007bff;
+}
+
 .input-icon {
     position: absolute;
     left: 10px;
@@ -57,11 +83,6 @@ h2 {
     transform: translateY(-50%);
     color: #888;
 }
-
-input:focus {
-    border-color: #007bff;
-}
-
 
 .password-group {
     position: relative;
@@ -101,17 +122,18 @@ input:focus {
 button {
     width: 100%;
     padding: 0.75rem;
-    background: #007bff;
+    background: linear-gradient(90deg, #87CEEB, #4682B4);
     color: white;
     border: none;
     border-radius: 5px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background 0.3s, transform 0.3s ease;
 }
 
 button:hover {
-    background: #0056b3;
+    background: linear-gradient(90deg, #6baed6, #2f5a78);
+    transform: translateY(-2px);
 }
 
 .forgot-button {
@@ -153,21 +175,43 @@ button:hover {
 .dashboard-container {
     display: flex;
     min-height: 100vh;
+    background: linear-gradient(135deg, rgba(135, 206, 235, 0.8), rgba(70, 130, 180, 0.8)), 
+                url('https://images.unsplash.com/photo-1507521628349-6e9b803b7b0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+    animation: gradientShift 15s ease infinite;
+    position: relative;
+    margin-left: 260px; 
 }
 
 .dashboard-content {
     flex: 1;
     padding: 24px;
-    margin-left: 250px; 
+    margin-left: 10px; 
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in-out;
 }
 
 .dashboard-section {
     margin-bottom: 32px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.dashboard-section:hover {
+    transform: translateY(-5px);
 }
 
 .dashboard-chart {
     max-width: 500px;
     margin: 16px 0;
+    padding: 10px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-badges {
@@ -181,9 +225,14 @@ button:hover {
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background-color: #e7f1ff;
+    background: linear-gradient(90deg, #87CEEB, #4682B4);
     border-radius: 4px;
-    color: #1a73e8;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
 }
 
 .recommendations-list, .courses-list {
@@ -195,6 +244,12 @@ button:hover {
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recommendation-item:hover, .course-item:hover {
+    border-color: #4682B4;
+    box-shadow: 0 2px 4px rgba(70, 130, 180, 0.2);
 }
 
 .recommendation-item a, .course-item a {
@@ -207,7 +262,7 @@ button:hover {
 }
 
 @media (max-width: 768px) {
-    .dashboard-content {
-        margin-left: 200px; /* Adjust for smaller screens */
+    .container, .dashboard-container {
+        margin-left: 200px; /* Adjust for navbar width on smaller screens */
     }
 }
