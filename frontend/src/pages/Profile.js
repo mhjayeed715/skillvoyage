@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaUser, 
   FaEnvelope, 
@@ -6,14 +6,12 @@ import {
   FaSave, 
   FaTimes,
   FaUserCircle,
-  FaCalendarAlt,
-  FaMapMarkerAlt,
   FaPhone,
-  FaGlobe,
   FaLinkedin,
   FaGithub,
-  FaTwitter,
-  FaCamera
+  FaFacebook,
+  FaCamera,
+  FaUpload
 } from 'react-icons/fa';
 import axios from 'axios';
 import './Profile.css';
@@ -21,23 +19,21 @@ import './Profile.css';
 function Profile({ name, email, preferences }) {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState('');
+    const fileInputRef = useRef(null);
+    
     const [profileData, setProfileData] = useState({
         name: name || '',
         email: email || '',
         preferences: preferences || [],
         bio: '',
-        location: '',
         phone: '',
-        website: '',
         linkedin: '',
         github: '',
-        twitter: '',
-        joinDate: '',
-        avatar: '',
-        timezone: 'UTC',
-        language: 'English'
+        facebook: '',
+        avatar: ''
     });
     const [tempProfileData, setTempProfileData] = useState({...profileData});
 
@@ -72,13 +68,11 @@ function Profile({ name, email, preferences }) {
                 const userData = response.data;
                 setProfileData({
                     ...profileData,
-                    ...userData,
-                    joinDate: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'
+                    ...userData
                 });
                 setTempProfileData({
                     ...profileData,
-                    ...userData,
-                    joinDate: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'
+                    ...userData
                 });
             }
         } catch (error) {
@@ -87,15 +81,10 @@ function Profile({ name, email, preferences }) {
             setProfileData(prev => ({
                 ...prev,
                 bio: 'Passionate learner focused on developing new skills in technology and personal growth.',
-                location: 'San Francisco, CA',
                 phone: '+1 (555) 123-4567',
-                website: 'https://johndoe.dev',
                 linkedin: 'https://linkedin.com/in/johndoe',
                 github: 'https://github.com/johndoe',
-                twitter: 'https://twitter.com/johndoe',
-                joinDate: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-                timezone: 'Pacific Standard Time',
-                language: 'English'
+                facebook: 'https://facebook.com/johndoe'
             }));
         } finally {
             setLoading(false);
@@ -128,6 +117,11 @@ function Profile({ name, email, preferences }) {
                 setIsEditing(false);
                 setMessage('Profile updated successfully!');
                 setMessageType('success');
+                
+                // Auto-hide success message after 3 seconds
+                setTimeout(() => {
+                    setMessage('');
+                }, 3000);
             }
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -143,6 +137,118 @@ function Profile({ name, email, preferences }) {
             ...prev,
             [field]: value
         }));
+    };
+
+    const handlePhotoUpload = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            setMessage('Please select a valid image file (JPEG, PNG, or GIF)');
+            setMessageType('error');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (file.size > maxSize) {
+            setMessage('File size must be less than 5MB');
+            setMessageType('error');
+            return;
+        }
+
+        setUploadingPhoto(true);
+        setMessage('Uploading photo...');
+        setMessageType('info');
+
+        try {
+            // Create FormData for file upload
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                `${process.env.REACT_APP_BACKEND_URL}/api/profile/upload-avatar`,
+                formData,
+                {
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                const avatarUrl = response.data.avatarUrl;
+                setProfileData(prev => ({
+                    ...prev,
+                    avatar: avatarUrl
+                }));
+                setTempProfileData(prev => ({
+                    ...prev,
+                    avatar: avatarUrl
+                }));
+                setMessage('Photo uploaded successfully!');
+                setMessageType('success');
+                
+                // Auto-hide success message after 3 seconds
+                setTimeout(() => {
+                    setMessage('');
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+            
+            // For demo purposes, create a local preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const avatarUrl = e.target.result;
+                setProfileData(prev => ({
+                    ...prev,
+                    avatar: avatarUrl
+                }));
+                setTempProfileData(prev => ({
+                    ...prev,
+                    avatar: avatarUrl
+                }));
+                setMessage('Photo uploaded successfully! (Demo mode)');
+                setMessageType('success');
+                
+                setTimeout(() => {
+                    setMessage('');
+                }, 3000);
+            };
+            reader.readAsDataURL(file);
+        } finally {
+            setUploadingPhoto(false);
+            // Clear the file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleRemovePhoto = () => {
+        setProfileData(prev => ({
+            ...prev,
+            avatar: ''
+        }));
+        setTempProfileData(prev => ({
+            ...prev,
+            avatar: ''
+        }));
+        setMessage('Photo removed successfully!');
+        setMessageType('success');
+        
+        setTimeout(() => {
+            setMessage('');
+        }, 3000);
     };
 
     const getInitials = (name) => {
@@ -173,18 +279,70 @@ function Profile({ name, email, preferences }) {
                     <div className="avatar-section">
                         <div className="avatar-container">
                             {profileData.avatar ? (
-                                <img src={profileData.avatar} alt="Profile" className="avatar-image" />
-                            ) : (
-                                <div className="avatar-placeholder">
-                                    {getInitials(profileData.name || 'User')}
-                                </div>
-                            )}
-                            {isEditing && (
-                                <button className="avatar-edit-btn">
-                                    <FaCamera />
+                                <img 
+                                    src={profileData.avatar} 
+                                    alt="Profile" 
+                                    className="avatar-image"
+                                    onError={(e) => {
+                                        // If image fails to load, show initials
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                            ) : null}
+                            <div 
+                                className="avatar-placeholder" 
+                                style={{ display: profileData.avatar ? 'none' : 'flex' }}
+                            >
+                                {getInitials(profileData.name || 'User')}
+                            </div>
+                            
+                            <div className="avatar-actions">
+                                <button 
+                                    className="avatar-edit-btn"
+                                    onClick={handlePhotoUpload}
+                                    disabled={uploadingPhoto}
+                                    title="Upload photo"
+                                >
+                                    {uploadingPhoto ? (
+                                        <div className="upload-spinner"></div>
+                                    ) : (
+                                        <FaCamera />
+                                    )}
                                 </button>
-                            )}
+                                
+                                {profileData.avatar && (
+                                    <button 
+                                        className="avatar-remove-btn"
+                                        onClick={handleRemovePhoto}
+                                        title="Remove photo"
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                )}
+                            </div>
+                            
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                            />
                         </div>
+                        
+                        {!profileData.avatar && (
+                            <div className="upload-prompt">
+                                <button 
+                                    onClick={handlePhotoUpload}
+                                    className="upload-btn"
+                                    disabled={uploadingPhoto}
+                                >
+                                    <FaUpload />
+                                    {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                     
                     <div className="profile-details">
@@ -206,16 +364,6 @@ function Profile({ name, email, preferences }) {
                             <div className="meta-item">
                                 <FaEnvelope className="meta-icon" />
                                 <span>{profileData.email}</span>
-                            </div>
-                            {profileData.location && (
-                                <div className="meta-item">
-                                    <FaMapMarkerAlt className="meta-icon" />
-                                    <span>{profileData.location}</span>
-                                </div>
-                            )}
-                            <div className="meta-item">
-                                <FaCalendarAlt className="meta-icon" />
-                                <span>Joined {profileData.joinDate}</span>
                             </div>
                         </div>
                     </div>
@@ -284,24 +432,6 @@ function Profile({ name, email, preferences }) {
                             <div className="contact-grid">
                                 <div className="contact-item">
                                     <label>
-                                        <FaMapMarkerAlt className="contact-icon" />
-                                        Location
-                                    </label>
-                                    {isEditing ? (
-                                        <input
-                                            type="text"
-                                            value={tempProfileData.location}
-                                            onChange={(e) => handleInputChange('location', e.target.value)}
-                                            className="edit-input"
-                                            placeholder="Your location"
-                                        />
-                                    ) : (
-                                        <span>{profileData.location || 'Not specified'}</span>
-                                    )}
-                                </div>
-
-                                <div className="contact-item">
-                                    <label>
                                         <FaPhone className="contact-icon" />
                                         Phone
                                     </label>
@@ -317,32 +447,6 @@ function Profile({ name, email, preferences }) {
                                         <span>{profileData.phone || 'Not specified'}</span>
                                     )}
                                 </div>
-
-                                <div className="contact-item">
-                                    <label>
-                                        <FaGlobe className="contact-icon" />
-                                        Website
-                                    </label>
-                                    {isEditing ? (
-                                        <input
-                                            type="url"
-                                            value={tempProfileData.website}
-                                            onChange={(e) => handleInputChange('website', e.target.value)}
-                                            className="edit-input"
-                                            placeholder="https://yourwebsite.com"
-                                        />
-                                    ) : (
-                                        <span>
-                                            {profileData.website ? (
-                                                <a href={profileData.website} target="_blank" rel="noopener noreferrer" className="contact-link">
-                                                    {profileData.website}
-                                                </a>
-                                            ) : (
-                                                'Not specified'
-                                            )}
-                                        </span>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -350,7 +454,7 @@ function Profile({ name, email, preferences }) {
                     {/* Social Links */}
                     <div className="profile-section">
                         <h3 className="section-title">
-                            <FaGlobe className="section-icon" />
+                            <FaUserCircle className="section-icon" />
                             Social Links
                         </h3>
                         <div className="section-content">
@@ -366,18 +470,16 @@ function Profile({ name, email, preferences }) {
                                             value={tempProfileData.linkedin}
                                             onChange={(e) => handleInputChange('linkedin', e.target.value)}
                                             className="edit-input"
-                                            placeholder="https://linkedin.com/in/username"
+                                            placeholder="https://linkedin.com/in/yourprofile"
                                         />
                                     ) : (
-                                        <span>
-                                            {profileData.linkedin ? (
-                                                <a href={profileData.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">
-                                                    {profileData.linkedin}
-                                                </a>
-                                            ) : (
-                                                'Not connected'
-                                            )}
-                                        </span>
+                                        profileData.linkedin ? (
+                                            <a href={profileData.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">
+                                                {profileData.linkedin}
+                                            </a>
+                                        ) : (
+                                            <span>Not specified</span>
+                                        )
                                     )}
                                 </div>
 
@@ -392,44 +494,40 @@ function Profile({ name, email, preferences }) {
                                             value={tempProfileData.github}
                                             onChange={(e) => handleInputChange('github', e.target.value)}
                                             className="edit-input"
-                                            placeholder="https://github.com/username"
+                                            placeholder="https://github.com/yourusername"
                                         />
                                     ) : (
-                                        <span>
-                                            {profileData.github ? (
-                                                <a href={profileData.github} target="_blank" rel="noopener noreferrer" className="social-link">
-                                                    {profileData.github}
-                                                </a>
-                                            ) : (
-                                                'Not connected'
-                                            )}
-                                        </span>
+                                        profileData.github ? (
+                                            <a href={profileData.github} target="_blank" rel="noopener noreferrer" className="social-link">
+                                                {profileData.github}
+                                            </a>
+                                        ) : (
+                                            <span>Not specified</span>
+                                        )
                                     )}
                                 </div>
 
                                 <div className="social-item">
                                     <label>
-                                        <FaTwitter className="social-icon twitter" />
-                                        Twitter
+                                        <FaFacebook className="social-icon facebook" />
+                                        Facebook
                                     </label>
                                     {isEditing ? (
                                         <input
                                             type="url"
-                                            value={tempProfileData.twitter}
-                                            onChange={(e) => handleInputChange('twitter', e.target.value)}
+                                            value={tempProfileData.facebook}
+                                            onChange={(e) => handleInputChange('facebook', e.target.value)}
                                             className="edit-input"
-                                            placeholder="https://twitter.com/username"
+                                            placeholder="https://facebook.com/yourprofile"
                                         />
                                     ) : (
-                                        <span>
-                                            {profileData.twitter ? (
-                                                <a href={profileData.twitter} target="_blank" rel="noopener noreferrer" className="social-link">
-                                                    {profileData.twitter}
-                                                </a>
-                                            ) : (
-                                                'Not connected'
-                                            )}
-                                        </span>
+                                        profileData.facebook ? (
+                                            <a href={profileData.facebook} target="_blank" rel="noopener noreferrer" className="social-link">
+                                                {profileData.facebook}
+                                            </a>
+                                        ) : (
+                                            <span>Not specified</span>
+                                        )
                                     )}
                                 </div>
                             </div>
@@ -453,60 +551,8 @@ function Profile({ name, email, preferences }) {
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="no-preferences">
-                                        No learning preferences set. Visit Settings to add your interests.
-                                    </p>
+                                    <p className="no-preferences">No learning preferences set.</p>
                                 )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Account Settings */}
-                    <div className="profile-section">
-                        <h3 className="section-title">
-                            <FaUserCircle className="section-icon" />
-                            Account Settings
-                        </h3>
-                        <div className="section-content">
-                            <div className="settings-grid">
-                                <div className="setting-item">
-                                    <label>Timezone</label>
-                                    {isEditing ? (
-                                        <select
-                                            value={tempProfileData.timezone}
-                                            onChange={(e) => handleInputChange('timezone', e.target.value)}
-                                            className="edit-select"
-                                        >
-                                            <option value="UTC">UTC</option>
-                                            <option value="Pacific Standard Time">Pacific Standard Time</option>
-                                            <option value="Mountain Standard Time">Mountain Standard Time</option>
-                                            <option value="Central Standard Time">Central Standard Time</option>
-                                            <option value="Eastern Standard Time">Eastern Standard Time</option>
-                                        </select>
-                                    ) : (
-                                        <span>{profileData.timezone}</span>
-                                    )}
-                                </div>
-
-                                <div className="setting-item">
-                                    <label>Language</label>
-                                    {isEditing ? (
-                                        <select
-                                            value={tempProfileData.language}
-                                            onChange={(e) => handleInputChange('language', e.target.value)}
-                                            className="edit-select"
-                                        >
-                                            <option value="English">English</option>
-                                            <option value="Spanish">Spanish</option>
-                                            <option value="French">French</option>
-                                            <option value="German">German</option>
-                                            <option value="Chinese">Chinese</option>
-                                            <option value="Japanese">Japanese</option>
-                                        </select>
-                                    ) : (
-                                        <span>{profileData.language}</span>
-                                    )}
-                                </div>
                             </div>
                         </div>
                     </div>

@@ -94,6 +94,13 @@ function App() {
         }
     }, [backendUrl]);
 
+    
+useEffect(() => {
+  
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+}, []);
+
     const preferenceOptions = [
         { value: 'Web Development', label: 'Web Development' },
         { value: 'Data Science', label: 'Data Science' },

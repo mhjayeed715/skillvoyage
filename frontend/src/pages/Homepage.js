@@ -9,8 +9,12 @@ import {
   FaPlay,
   FaCheck,
   FaStar,
-  FaArrowRight
+  FaArrowRight,
+  FaGraduationCap,
+  FaBookOpen,
+  FaLightbulb
 } from 'react-icons/fa';
+import skillVoyageLogo from '../assets/svlogo.png'; 
 import './Homepage.css';
 
 function Homepage() {
@@ -34,33 +38,43 @@ function Homepage() {
       icon: <FaUsers className="text-purple-600" />,
       title: "Peer Comparison",
       description: "Compare your progress with anonymous peers to stay motivated."
+    },
+    {
+      icon: <FaGraduationCap className="text-indigo-600" />,
+      title: "Expert-Led Courses",
+      description: "Learn from industry experts with real-world experience and proven track records."
+    },
+    {
+      icon: <FaLightbulb className="text-orange-600" />,
+      title: "Interactive Learning",
+      description: "Engage with hands-on projects, quizzes, and interactive coding environments."
     }
   ];
 
   const stats = [
-    { number: "10K+", label: "Active Learners" },
-    { number: "500+", label: "Courses Available" },
-    { number: "50+", label: "Skill Categories" },
-    { number: "95%", label: "Success Rate" }
+    { number: "25K+", label: "Active Learners" },
+    { number: "1,200+", label: "Courses Available" },
+    { number: "150+", label: "Skill Categories" },
+    { number: "98%", label: "Success Rate" }
   ];
 
   const testimonials = [
     {
       name: "Sarah Johnson",
-      role: "Web Developer",
-      content: "SkillVoyage transformed my learning journey. The AI recommendations helped me discover courses I never knew I needed!",
+      role: "Senior Web Developer at Google",
+      content: "SkillVoyage transformed my learning journey. The AI recommendations helped me discover courses I never knew I needed! I went from junior to senior developer in just 8 months.",
       rating: 5
     },
     {
       name: "Michael Chen",
-      role: "Data Scientist",
-      content: "The gamification features keep me motivated. I've completed 12 courses in just 3 months!",
+      role: "Lead Data Scientist at Microsoft",
+      content: "The gamification features keep me motivated every day. I've completed 18 courses in just 4 months and landed my dream job!",
       rating: 5
     },
     {
       name: "Emily Rodriguez",
-      role: "UX Designer",
-      content: "The peer comparison feature showed me where I stand and motivated me to push harder. Amazing platform!",
+      role: "UX Design Manager at Apple",
+      content: "The peer comparison feature showed me where I stand and motivated me to push harder. The community aspect is incredible!",
       rating: 5
     }
   ];
@@ -72,22 +86,27 @@ function Homepage() {
         <div className="container-modern">
           <div className="hero-content">
             <div className="hero-text">
-              <h1 className="hero-title">
+              <div className="brand-header">
+                <img src={skillVoyageLogo} alt="SkillVoyage Logo" className="hero-logo" />
+                <h1 className="brand-name">SkillVoyage</h1>
+              </div>
+              <h2 className="hero-title">
                 Master New Skills with 
                 <span className="text-gradient"> AI-Powered Learning</span>
-              </h1>
+              </h2>
               <p className="hero-description">
-                Join thousands of learners on SkillVoyage, where personalized recommendations, 
-                gamification, and peer comparison make learning engaging and effective.
+                Embark on your personalized learning adventure with SkillVoyage. Where cutting-edge AI meets 
+                gamified education to create an engaging, effective, and transformative learning experience 
+                tailored just for you.
               </p>
               <div className="hero-buttons">
                 <Link to="/signup" className="btn-primary btn-large">
                   <FaRocket />
-                  Start Learning Free
+                  Start Your Voyage Free
                 </Link>
                 <Link to="/login" className="btn-outline">
                   <FaPlay />
-                  Sign In
+                  Sign In to Continue
                 </Link>
               </div>
               <div className="hero-stats">
@@ -102,33 +121,38 @@ function Homepage() {
             <div className="hero-visual">
               <div className="hero-card">
                 <div className="card-header">
-                  <FaTrophy className="text-yellow-500" />
+                  <div className="mini-logo">
+                    <img src={skillVoyageLogo} alt="SV" className="card-logo" />
+                  </div>
                   <span>Your Learning Dashboard</span>
                 </div>
                 <div className="progress-demo">
                   <div className="course-item">
-                    <span>React Development</span>
+                    <span>React Development Mastery</span>
                     <div className="progress-bar">
                       <div className="progress-fill" style={{width: '75%'}}></div>
                     </div>
+                    <small>75% Complete</small>
                   </div>
                   <div className="course-item">
-                    <span>Python for AI</span>
+                    <span>Python for AI & Machine Learning</span>
                     <div className="progress-bar">
                       <div className="progress-fill" style={{width: '60%'}}></div>
                     </div>
+                    <small>60% Complete</small>
                   </div>
                   <div className="course-item">
-                    <span>Data Science</span>
+                    <span>Advanced Data Science</span>
                     <div className="progress-bar">
                       <div className="progress-fill" style={{width: '90%'}}></div>
                     </div>
+                    <small>90% Complete</small>
                   </div>
                 </div>
                 <div className="badges-demo">
                   <div className="badge">🏆 Course Master</div>
-                  <div className="badge">🔥 7-day Streak</div>
-                  <div className="badge">⭐ Top Performer</div>
+                  <div className="badge">🔥 15-day Streak</div>
+                  <div className="badge">⭐ Top 10% Learner</div>
                 </div>
               </div>
             </div>
@@ -141,7 +165,7 @@ function Homepage() {
         <div className="container-modern">
           <div className="section-header">
             <h2>Why Choose SkillVoyage?</h2>
-            <p>Experience the future of online learning with our innovative features</p>
+            <p>Experience the future of online learning with our innovative, AI-driven platform</p>
           </div>
           <div className="features-grid">
             {features.map((feature, index) => (
@@ -160,23 +184,23 @@ function Homepage() {
         <div className="container-modern">
           <div className="section-header">
             <h2>How SkillVoyage Works</h2>
-            <p>Your journey to mastery in three simple steps</p>
+            <p>Your personalized journey to mastery in three simple steps</p>
           </div>
           <div className="steps-container">
             <div className="step">
               <div className="step-number">1</div>
-              <h3>Sign Up & Set Preferences</h3>
-              <p>Create your account and tell us about your learning interests. Our AI will use this to personalize your experience.</p>
+              <h3>Sign Up & Set Your Course</h3>
+              <p>Create your SkillVoyage account and tell us about your learning goals and interests. Our advanced AI will use this to craft your personalized learning experience.</p>
             </div>
             <div className="step">
               <div className="step-number">2</div>
-              <h3>Get AI Recommendations</h3>
-              <p>Receive curated course suggestions based on your preferences, learning style, and progress patterns.</p>
+              <h3>Navigate with AI Guidance</h3>
+              <p>Receive intelligent course recommendations powered by machine learning algorithms that adapt to your learning style, pace, and progress patterns.</p>
             </div>
             <div className="step">
               <div className="step-number">3</div>
-              <h3>Learn & Achieve</h3>
-              <p>Complete courses, earn badges, maintain streaks, and compare your progress with peers for motivation.</p>
+              <h3>Achieve & Excel</h3>
+              <p>Complete courses, unlock achievements, maintain learning streaks, and compare your progress with a global community of motivated learners.</p>
             </div>
           </div>
         </div>
@@ -186,8 +210,8 @@ function Homepage() {
       <section className="testimonials-section">
         <div className="container-modern">
           <div className="section-header">
-            <h2>What Our Learners Say</h2>
-            <p>Join thousands of successful learners who transformed their careers</p>
+            <h2>Success Stories from Our Voyagers</h2>
+            <p>Join thousands of successful learners who transformed their careers with SkillVoyage</p>
           </div>
           <div className="testimonials-grid">
             {testimonials.map((testimonial, index) => (
@@ -212,26 +236,33 @@ function Homepage() {
       <section className="cta-section">
         <div className="container-modern">
           <div className="cta-content">
-            <h2>Ready to Start Your Learning Journey?</h2>
-            <p>Join SkillVoyage today and unlock your potential with AI-powered personalized learning.</p>
+            <div className="cta-logo">
+              <img src={skillVoyageLogo} alt="SkillVoyage" className="cta-logo-img" />
+            </div>
+            <h2>Ready to Begin Your SkillVoyage?</h2>
+            <p>Join our community of learners and unlock your potential with AI-powered personalized education. Your journey to mastery starts here.</p>
             <div className="cta-buttons">
               <Link to="/signup" className="btn-primary btn-large">
-                Get Started Free
+                Start Your Voyage Now
                 <FaArrowRight />
               </Link>
             </div>
             <div className="cta-features">
               <div className="cta-feature">
-                <FaCheck className="text-green-500" />
-                <span>Free to start</span>
+                <FaCheck className="text-green-300" />
+                <span>Free to start your voyage</span>
               </div>
               <div className="cta-feature">
-                <FaCheck className="text-green-500" />
+                <FaCheck className="text-green-300" />
                 <span>No credit card required</span>
               </div>
               <div className="cta-feature">
-                <FaCheck className="text-green-500" />
+                <FaCheck className="text-green-300" />
                 <span>Cancel anytime</span>
+              </div>
+              <div className="cta-feature">
+                <FaCheck className="text-green-300" />
+                <span>24/7 learning support</span>
               </div>
             </div>
           </div>

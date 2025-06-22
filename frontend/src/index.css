@@ -3,16 +3,38 @@
 @tailwind utilities;
 
 
+/* CSS Variables for Theming */
 :root {
-  --color-primary: #2563EB;      /* Educational Blue */
-  --color-secondary: #10B981;    /* Success Green */
-  --color-accent: #F59E0B;       /* Achievement Gold */
-  --color-background: #F3F4F6;   /* Light Grey */
-  --color-text: #1F2937;         /* Dark Grey */
-  --color-progress: #6366F1;     /* Indicator Purple */
-  --spacing-unit: 24px;          /* Standard spacing */
-  --border-radius: 12px;         /* Modern border radius */
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #10B981;
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-accent: #F59E0B;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+  --color-hover: #f8fafc;
+  --color-text: #1F2937;
+  --color-progress: #6366F1;
+  --spacing-unit: 24px;
+  --border-radius: 12px;
   --font-primary: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] {
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text: #f1f5f9;
+  --color-border: #334155;
+  --color-border-light: #475569;
+  --color-hover: #334155;
 }
 
 /* Global Styles */
@@ -22,8 +44,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-background);
-  color: var(--color-text);
+  color: var(--color-text-primary);
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Theme transition for all elements */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Custom Utility Classes */
