@@ -96,19 +96,24 @@
 }
 
 .input-icon {
-  position: absolute;
-  left: 18px; /* Adjusted for better positioning */
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6b7280;
-  z-index: 2;
-  font-size: 18px; /* Slightly larger for better visibility */
-  pointer-events: none;
-  display: flex; /* Use flexbox for perfect centering */
-  align-items: center;
-  justify-content: center;
-  width: 20px; /* Fixed width for consistent positioning */
-  height: 20px; /* Fixed height for consistent positioning */
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 2.5rem; 
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+input:focus {
+    border-color: #007bff;
 }
 
 /* Password Group - COMPLETELY FIXED */
@@ -161,30 +166,18 @@
   height: 20px;
 }
 
-/* Eye icon - FIXED */
+/* Eye icon  */
 .eye-icon {
-  position: absolute;
-  right: 18px; /* Match left positioning */
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #6b7280;
-  z-index: 2;
-  transition: color 0.3s ease;
-  padding: 8px; /* Larger click area */
-  margin: -8px; /* Negative margin to maintain positioning */
-  border-radius: 6px; /* Rounded click area */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px; /* Match other icon sizes */
-  width: 20px;
-  height: 20px;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #878787;
 }
 
 .eye-icon:hover {
-  color: #2563eb;
-  background-color: rgba(37, 99, 235, 0.1); /* Subtle hover background */
+    color: #545454;
 }
 
 .eye-icon:active {

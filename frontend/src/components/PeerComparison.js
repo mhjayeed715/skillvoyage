@@ -81,11 +81,9 @@ function PeerComparison() {
         }
       };
       
-      // Simulate API call
-      setTimeout(() => {
-        setComparisonData(mockData);
-        setLoading(false);
-      }, 1000);
+      // Set data immediately
+      setComparisonData(mockData);
+      setLoading(false);
       
     } catch (error) {
       console.error('Error fetching comparison data:', error);
@@ -347,18 +345,18 @@ function PeerComparison() {
           <button
             onClick={() => setIsAnonymous(!isAnonymous)}
             className={`anonymity-toggle ${isAnonymous ? 'active' : ''}`}
-            title={isAnonymous ? 'Anonymous Mode On' : 'Anonymous Mode Off'}
           >
-            {isAnonymous ? <FaEye /> : <FaEyeSlash />}
+            {isAnonymous ? <FaEyeSlash /> : <FaEye />}
             {isAnonymous ? 'Anonymous' : 'Public'}
           </button>
         </div>
       </div>
 
+      {/* Ranking Banner */}
       <div className="ranking-banner">
         <div className="ranking-info">
           <div className="rank-badge">
-            <FaMedal className="rank-icon" />
+            <FaTrophy className="rank-icon" />
             <span className="rank-number">#{comparisonData.ranking}</span>
           </div>
           <div className="rank-details">
@@ -369,15 +367,14 @@ function PeerComparison() {
         
         <div className="percentile-info">
           <div className={`performance-badge ${performanceLevel.bg} ${performanceLevel.color}`}>
-            <FaTrophy className="performance-icon" />
-            <span>{performanceLevel.text}</span>
+            <FaMedal className="performance-icon" />
+            {performanceLevel.text}
           </div>
-          <div className="percentile-text">
-            {comparisonData.percentile}th percentile
-          </div>
+          <div className="percentile-text">{comparisonData.percentile}th percentile</div>
         </div>
       </div>
 
+      {/* Metrics Grid */}
       <div className="metrics-grid">
         <div className="metric-card">
           <div className="metric-header">
@@ -385,15 +382,12 @@ function PeerComparison() {
             {getTrendIcon(comparisonData.trends.coursesCompleted)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.coursesCompleted}</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.coursesCompleted}</div>
+            <span className="user-value">{comparisonData.userStats.coursesCompleted}</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{comparisonData.peerAverages.coursesCompleted}</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.coursesCompleted > comparisonData.peerAverages.coursesCompleted 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
 
@@ -403,15 +397,12 @@ function PeerComparison() {
             {getTrendIcon(comparisonData.trends.hoursStudied)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.hoursStudied}h</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.hoursStudied}h</div>
+            <span className="user-value">{comparisonData.userStats.hoursStudied}</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{comparisonData.peerAverages.hoursStudied}</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.hoursStudied > comparisonData.peerAverages.hoursStudied 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
 
@@ -421,41 +412,36 @@ function PeerComparison() {
             {getTrendIcon(comparisonData.trends.averageScore)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.averageScore}%</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.averageScore}%</div>
+            <span className="user-value">{comparisonData.userStats.averageScore}%</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{comparisonData.peerAverages.averageScore}%</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.averageScore > comparisonData.peerAverages.averageScore 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-header">
-            <span className="metric-label">Current Streak</span>
+            <span className="metric-label">Streak Days</span>
             {getTrendIcon(comparisonData.trends.streakDays)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.streakDays} days</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.streakDays} days</div>
+            <span className="user-value">{comparisonData.userStats.streakDays}</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{comparisonData.peerAverages.streakDays}</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.streakDays > comparisonData.peerAverages.streakDays 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
       </div>
 
+      {/* Charts Container */}
       <div className="charts-container">
-        <div className="chart-card full-width">
+        <div className="chart-card">
           <div className="chart-header">
-            <h4>Overall Performance Comparison</h4>
+            <h4>Performance Comparison</h4>
             <FaChartBar className="chart-icon" />
           </div>
           <div className="chart-wrapper">
@@ -475,7 +461,7 @@ function PeerComparison() {
 
         <div className="chart-card">
           <div className="chart-header">
-            <h4>Your Percentile</h4>
+            <h4>Percentile Ranking</h4>
             <FaTrophy className="chart-icon" />
           </div>
           <div className="chart-wrapper">
@@ -483,52 +469,43 @@ function PeerComparison() {
           </div>
           <div className="percentile-display">
             <div className="percentile-number">{comparisonData.percentile}%</div>
-            <div className="percentile-label">Better than {comparisonData.percentile}% of learners</div>
+            <div className="percentile-label">Better than peers</div>
           </div>
         </div>
       </div>
 
+      {/* Insights Card */}
       <div className="insights-card">
         <div className="insights-header">
           <h4>Performance Insights</h4>
         </div>
         <div className="insights-grid">
           <div className="insight-item">
-            <div className="insight-icon text-green-600">
-              <FaArrowUp />
-            </div>
+            <FaTrophy className="insight-icon text-yellow-500" />
             <div className="insight-content">
               <div className="insight-title">Strong Performance</div>
               <div className="insight-text">
-                You're performing above average in {
-                  Object.entries(comparisonData.categoryComparison)
-                    .filter(([_, values]) => values.user > values.peer)
-                    .length
-                } out of {Object.keys(comparisonData.categoryComparison).length} categories
+                You're performing above average in most areas. Keep up the great work!
               </div>
             </div>
           </div>
           
           <div className="insight-item">
-            <div className="insight-icon text-blue-600">
-              <FaUsers />
+            <FaChartBar className="insight-icon text-blue-500" />
+            <div className="insight-content">
+              <div className="insight-title">Growth Opportunity</div>
+              <div className="insight-text">
+                Focus on consistency to improve your streak and study hours.
+              </div>
             </div>
+          </div>
+          
+          <div className="insight-item">
+            <FaUsers className="insight-icon text-green-500" />
             <div className="insight-content">
               <div className="insight-title">Peer Network</div>
               <div className="insight-text">
-                You're part of a community of {comparisonData.totalUsers} active learners
-              </div>
-            </div>
-          </div>
-          
-          <div className="insight-item">
-            <div className="insight-icon text-purple-600">
-              <FaTrophy />
-            </div>
-            <div className="insight-content">
-              <div className="insight-title">Achievement Level</div>
-              <div className="insight-text">
-                You've earned more badges than {comparisonData.percentile}% of learners
+                Connect with top performers to accelerate your learning journey.
               </div>
             </div>
           </div>

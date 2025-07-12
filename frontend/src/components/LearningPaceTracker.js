@@ -44,11 +44,9 @@ function LearningPaceTracker() {
         currentWeekHours: 9
       };
       
-      // Simulate API call
-      setTimeout(() => {
-        setPaceData(mockData);
-        setLoading(false);
-      }, 1000);
+      // Set data immediately
+      setPaceData(mockData);
+      setLoading(false);
       
     } catch (error) {
       console.error('Error fetching pace data:', error);

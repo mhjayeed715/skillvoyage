@@ -348,13 +348,14 @@ useEffect(() => {
                                                     required
                                                     className="w-full p-3 pl-10 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
-                                                <span
+                                            <span
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     className="absolute right-3 top-3.5 cursor-pointer text-gray-400 hover:text-gray-600"
-                                                >
-                                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                                </span>
+                                                 >
+                                            {showPassword ? <FaEye /> : <FaEyeSlash />}
+                                            </span>
                                             </div>
+
                                             {isSignup && (
                                                 <div className="preferences-group">
                                                     <label className="block text-sm font-medium text-gray-700 mb-2">

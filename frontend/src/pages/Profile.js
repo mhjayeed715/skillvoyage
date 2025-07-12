@@ -77,14 +77,14 @@ function Profile({ name, email, preferences }) {
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
-            // Use mock data for demo
+            
             setProfileData(prev => ({
                 ...prev,
                 bio: 'Passionate learner focused on developing new skills in technology and personal growth.',
-                phone: '+1 (555) 123-4567',
-                linkedin: 'https://linkedin.com/in/johndoe',
-                github: 'https://github.com/johndoe',
-                facebook: 'https://facebook.com/johndoe'
+                phone: '+880 1712345678', 
+                linkedin: '',
+                github: '',
+                facebook: ''
             }));
         } finally {
             setLoading(false);
@@ -118,7 +118,6 @@ function Profile({ name, email, preferences }) {
                 setMessage('Profile updated successfully!');
                 setMessageType('success');
                 
-                // Auto-hide success message after 3 seconds
                 setTimeout(() => {
                     setMessage('');
                 }, 3000);
@@ -147,7 +146,7 @@ function Profile({ name, email, preferences }) {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Validate file type
+        
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
             setMessage('Please select a valid image file (JPEG, PNG, or GIF)');
@@ -155,8 +154,7 @@ function Profile({ name, email, preferences }) {
             return;
         }
 
-        // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        const maxSize = 5 * 1024 * 1024; 
         if (file.size > maxSize) {
             setMessage('File size must be less than 5MB');
             setMessageType('error');
@@ -168,7 +166,6 @@ function Profile({ name, email, preferences }) {
         setMessageType('info');
 
         try {
-            // Create FormData for file upload
             const formData = new FormData();
             formData.append('avatar', file);
 
@@ -204,8 +201,6 @@ function Profile({ name, email, preferences }) {
             }
         } catch (error) {
             console.error('Error uploading photo:', error);
-            
-            // For demo purposes, create a local preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 const avatarUrl = e.target.result;
@@ -227,7 +222,6 @@ function Profile({ name, email, preferences }) {
             reader.readAsDataURL(file);
         } finally {
             setUploadingPhoto(false);
-            // Clear the file input
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -284,7 +278,6 @@ function Profile({ name, email, preferences }) {
                                     alt="Profile" 
                                     className="avatar-image"
                                     onError={(e) => {
-                                        // If image fails to load, show initials
                                         e.target.style.display = 'none';
                                         e.target.nextSibling.style.display = 'flex';
                                     }}
@@ -441,7 +434,7 @@ function Profile({ name, email, preferences }) {
                                             value={tempProfileData.phone}
                                             onChange={(e) => handleInputChange('phone', e.target.value)}
                                             className="edit-input"
-                                            placeholder="Your phone number"
+                                            placeholder="+880 1XXXXXXXXX"
                                         />
                                     ) : (
                                         <span>{profileData.phone || 'Not specified'}</span>

@@ -5,7 +5,8 @@ import {
   ArcElement, 
   BarElement, 
   CategoryScale, 
-  LinearScale, 
+  LinearScale,
+  RadialLinearScale, 
   Tooltip, 
   Legend,
   LineElement,
@@ -29,16 +30,17 @@ import {
 } from 'react-icons/fa';
 import axios from 'axios';
 import Select from 'react-select';
-import LearningPaceTracker from '../components/LearningPaceTracker';
-import PeerComparison from '../components/PeerComparison';
-import CourseNotes from '../components/CourseNotes';
+import LearningPaceTracker from '../components/LearningPaceTracker.js';
+import PeerComparison from '../components/PeerComparison.js';
+import CourseNotes from '../components/CourseNotes.js';
 import './Dashboard.css';
 
 ChartJS.register(
   ArcElement, 
   BarElement, 
   CategoryScale, 
-  LinearScale, 
+  LinearScale,
+  RadialLinearScale,  
   Tooltip, 
   Legend,
   LineElement,
