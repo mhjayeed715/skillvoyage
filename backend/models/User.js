@@ -33,6 +33,18 @@ const UserSchema = new mongoose.Schema(
 
     // gamification / stats
     streak: { type: Number, default: 0 },
+    lastActiveDate: { type: Date, default: null },
+    totalWatchTime: { type: Number, default: 0 }, // cumulative seconds watched
+    videoWatchHistory: [
+      {
+        videoId: { type: String, default: "" },
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+        title: { type: String, default: "" },
+        watchTime: { type: Number, default: 0 }, // seconds for this video
+        lastWatched: { type: Date, default: Date.now },
+        completed: { type: Boolean, default: false },
+      },
+    ],
     badges: { type: [String], default: [] },
     goals: { type: [String], default: [] },
 

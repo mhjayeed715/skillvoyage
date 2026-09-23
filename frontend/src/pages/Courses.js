@@ -1,9 +1,20 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState, useCallback } from "react"
 import axios from "axios"
-import Select from "react-select"
-import { FaYoutube, FaBullseye, FaCheckCircle } from "react-icons/fa"
+import { motion } from "framer-motion"
+import {
+  FaSearch,
+  FaTimes,
+  FaPlay,
+  FaCheckCircle,
+  FaFire,
+  FaClock,
+  FaBookOpen,
+  FaBrain,
+  FaTv,
+} from "react-icons/fa"
+import InbuiltPlayer from "../components/InbuiltPlayer"
 import { getBackendUrl } from "../utils/apiConfig"
 import "./Courses.css"
 
@@ -17,6 +28,7 @@ function extractYouTubeIds(url) {
     return { videoId: "", playlistId: "" }
   }
 }
+
 function getVideoThumbFromUrl(youtubeUrl) {
   const { videoId } = extractYouTubeIds(youtubeUrl || "")
   return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : ""
@@ -34,55 +46,9 @@ const CATEGORY_LIST = [
   "Game Development",
   "Blockchain",
   "UI/UX Design",
-  "Graphic Design",
-  "Digital Marketing",
-  "SEO",
-  "Content Writing",
-  "Video Editing",
-  "Photography",
-  "3D Modeling",
-  "Animation",
   "Software Engineering",
   "Database Management",
-  "Network Administration",
-  "System Administration",
   "Project Management",
-  "Product Management",
-  "Business Analysis",
-  "Data Analysis",
-  "Data Visualization",
-  "Statistics",
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "Environmental Science",
-  "Economics",
-  "Finance",
-  "Accounting",
-  "Human Resources",
-  "Public Speaking",
-  "Leadership",
-  "Time Management",
-  "Critical Thinking",
-  "Problem Solving",
-  "Teamwork",
-  "Communication Skills",
-  "Creative Writing",
-  "Journalism",
-  "Translation",
-  "Foreign Languages",
-  "Psychology",
-  "Sociology",
-  "History",
-  "Philosophy",
-  "Music Production",
-  "Sound Design",
-  "Fashion Design",
-  "Interior Design",
-  "Cooking",
-  "Gardening",
-  "Fitness Training",
 ]
 
 function Courses() {
@@ -91,34 +57,74 @@ function Courses() {
   const [selectedCategory, setSelectedCategory] = useState("")
   const [searchKeyword, setSearchKeyword] = useState("")
   const [thumbs, setThumbs] = useState({})
-  const [progressMap, setProgressMap] = useState({}) // courseId -> status
+  const [progressMap, setProgressMap] = useState({}) // courseId -> { status, completion }
+  const [userStats, setUserStats] = useState({ streak: 1, totalHours: 0, completedCount: 0 })
+  const [activeCourse, setActiveCourse] = useState(null) // Course opened in InbuiltPlayer
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Fetch courses
-  useEffect(() => {
-    const fetchCourses = async () => {
-      const params = new URLSearchParams()
-      if (selectedCategory) params.append("category", selectedCategory)
-      if (searchKeyword) params.append("keyword", searchKeyword)
-      const token = localStorage.getItem("token")
-      try {
-        const response = await axios.get(`${backendUrl}/api/courses?${params.toString()}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (response.status >= 200 && response.status < 300) {
-          setCourses(Array.isArray(response.data) ? response.data : [])
-        } else {
-          setError(response.data?.error || "Failed to load courses")
-        }
-      } catch (e) {
-        console.error("Courses fetch error:", e.message)
-        setError("Failed to load courses")
-      }
-    }
-    fetchCourses()
-  }, [backendUrl, selectedCategory, searchKeyword])
+  const token = localStorage.getItem("token")
+  const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
 
-  // Load thumbnails
+  // Fetch user stats & dashboard data for telemetry banner
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/dashboard`, { headers: authHeaders })
+      if (res.data) {
+        const watchHours = Math.round(((res.data.totalWatchTime || 0) / 3600) * 10) / 10
+        setUserStats({
+          streak: res.data.streak || 1,
+          totalHours: Math.max(res.data.totalHours || 0, watchHours),
+          completedCount: res.data.completedCourses || 0,
+        })
+
+        // Build progress map
+        const map = {}
+        ;(res.data.progress || []).forEach((p) => {
+          if (p.courseId) {
+            map[p.courseId] = {
+              status: p.status || "not-started",
+              completion: p.completion || 0,
+            }
+          }
+        })
+        setProgressMap(map)
+      }
+    } catch (e) {
+      console.error("Dashboard fetch error:", e.message)
+    }
+  }, [backendUrl, authHeaders])
+
+  // Fetch courses list
+  const fetchCourses = useCallback(async () => {
+    setLoading(true)
+    const params = new URLSearchParams()
+    if (selectedCategory) params.append("category", selectedCategory)
+    if (searchKeyword) params.append("keyword", searchKeyword)
+
+    try {
+      const response = await axios.get(`${backendUrl}/api/courses?${params.toString()}`, {
+        headers: authHeaders,
+      })
+      if (response.status >= 200 && response.status < 300) {
+        setCourses(Array.isArray(response.data) ? response.data : [])
+      } else {
+        setError(response.data?.error || "Failed to load courses")
+      }
+    } catch (e) {
+      console.error("Courses fetch error:", e.message)
+      setError("Failed to load courses. Please check connection.")
+    } finally {
+      setLoading(false)
+    }
+  }, [backendUrl, selectedCategory, searchKeyword, authHeaders])
+
+  useEffect(() => {
+    fetchCourses()
+    fetchDashboardData()
+  }, [fetchCourses, fetchDashboardData])
+
+  // Load video thumbnails efficiently
   useEffect(() => {
     const controller = new AbortController()
     async function loadThumb(course) {
@@ -128,7 +134,7 @@ function Courses() {
       try {
         const oembed = await fetch(
           `https://www.youtube.com/oembed?url=${encodeURIComponent(course.youtube)}&format=json`,
-          { signal: controller.signal },
+          { signal: controller.signal }
         )
         if (oembed.ok) {
           const data = await oembed.json()
@@ -137,6 +143,7 @@ function Courses() {
       } catch (_e) {}
       return ""
     }
+
     async function run() {
       const updates = {}
       await Promise.all(
@@ -144,7 +151,7 @@ function Courses() {
           if (thumbs[c._id]) return
           const url = await loadThumb(c)
           if (url) updates[c._id] = url
-        }),
+        })
       )
       if (Object.keys(updates).length) setThumbs((prev) => ({ ...prev, ...updates }))
     }
@@ -152,154 +159,317 @@ function Courses() {
     return () => controller.abort()
   }, [courses, thumbs])
 
-  const categoryOptions = useMemo(
-    () => [{ value: "", label: "All Categories" }, ...CATEGORY_LIST.map((v) => ({ value: v, label: v }))],
-    [],
-  )
+  // Toggle course complete status
+  const handleToggleComplete = async (course, e) => {
+    if (e) e.stopPropagation()
+    const current = progressMap[course._id]?.status || "not-started"
+    const nextStatus = current === "completed" ? "not-started" : "completed"
+    const nextCompletion = nextStatus === "completed" ? 1 : 0
 
-  const statusToCompletion = (status) => (status === "completed" ? 1 : status === "in-progress" ? 0.5 : 0)
-  const onUpdateStatus = async (course, status) => {
-    const token = localStorage.getItem("token")
-    const completion = statusToCompletion(status)
-    // optimistic UI
-    setProgressMap((prev) => ({ ...prev, [course._id]: status }))
+    // Optimistic UI update
+    setProgressMap((prev) => ({
+      ...prev,
+      [course._id]: { status: nextStatus, completion: nextCompletion },
+    }))
+
     try {
-      if (status === "completed") {
+      if (nextStatus === "completed") {
         await axios.post(
           `${backendUrl}/api/complete-course`,
           { courseId: course._id },
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: authHeaders }
         )
       } else {
         await axios.post(
           `${backendUrl}/api/course-progress`,
-          { courseId: course._id, status, completion },
-          { headers: { Authorization: `Bearer ${token}` } },
+          { courseId: course._id, status: nextStatus, completion: nextCompletion },
+          { headers: authHeaders }
         )
       }
-    } catch (e) {
-      console.error("Update status failed:", e.message)
-      setError("Failed to update status")
-      setTimeout(() => setError(null), 2200)
+      fetchDashboardData()
+    } catch (err) {
+      console.error("Toggle complete error:", err)
     }
   }
 
+  // Handle in-player progress updates
+  const handlePlayerProgressUpdate = (courseId, status) => {
+    setProgressMap((prev) => ({
+      ...prev,
+      [courseId]: {
+        status,
+        completion: status === "completed" ? 1 : Math.max(prev[courseId]?.completion || 0, 0.4),
+      },
+    }))
+    fetchDashboardData()
+  }
+
+  // Filtered courses
+  const filteredCourses = useMemo(() => {
+    return courses.filter((c) => {
+      const matchCat = !selectedCategory || c.category?.toLowerCase() === selectedCategory.toLowerCase()
+      const matchSearch =
+        !searchKeyword ||
+        c.title?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+        c.category?.toLowerCase().includes(searchKeyword.toLowerCase())
+      return matchCat && matchSearch
+    })
+  }, [courses, selectedCategory, searchKeyword])
+
   return (
-    <div className="courses-page">
-      <div className="courses-header">
-        <h2 className="courses-title">Courses</h2>
-        <p className="courses-subtext">Browse curated YouTube playlists and track your progress</p>
+    <div className="courses-page-root">
+      {/* ── Active Inbuilt Video Player Modal ── */}
+      {activeCourse && (
+        <InbuiltPlayer
+          course={activeCourse}
+          onClose={() => setActiveCourse(null)}
+          onProgressUpdated={handlePlayerProgressUpdate}
+        />
+      )}
+
+      {/* ── Hero & Live Learning Telemetry ── */}
+      <section className="courses-hero-banner">
+        <div className="courses-hero-text">
+          <div className="courses-hero-eyebrow">
+            <FaTv /> Curated Interactive Lectures
+          </div>
+          <h1 className="courses-hero-title">Course Curriculum & Video Lab</h1>
+          <p className="courses-hero-desc">
+            Learn with our inbuilt YouTube player. Your study time is logged second-by-second to sustain
+            your learning streak, power AI conceptual assistance, and advance your engineering profile.
+          </p>
+        </div>
+
+        {/* Telemetry Stat Tiles */}
+        <div className="courses-telemetry-cluster">
+          <div className="telemetry-stat-tile">
+            <div className="stat-tile-icon-box">
+              <FaFire />
+            </div>
+            <div className="stat-tile-content">
+              <span className="stat-tile-value">{userStats.streak} Days</span>
+              <span className="stat-tile-label">Daily Streak</span>
+            </div>
+          </div>
+
+          <div className="telemetry-stat-tile">
+            <div className="stat-tile-icon-box">
+              <FaClock />
+            </div>
+            <div className="stat-tile-content">
+              <span className="stat-tile-value">{userStats.totalHours} hrs</span>
+              <span className="stat-tile-label">Watched Time</span>
+            </div>
+          </div>
+
+          <div className="telemetry-stat-tile">
+            <div className="stat-tile-icon-box">
+              <FaBookOpen />
+            </div>
+            <div className="stat-tile-content">
+              <span className="stat-tile-value">{userStats.completedCount}</span>
+              <span className="stat-tile-label">Completed</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Search Bar & Category Navigation Strip ── */}
+      <div className="courses-control-bar">
+        <div className="courses-search-row">
+          <div className="search-input-wrapper">
+            <FaSearch className="search-glyph-icon" />
+            <input
+              type="text"
+              placeholder="Search lectures, topics, or technologies..."
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="courses-search-field"
+            />
+            {searchKeyword && (
+              <button
+                type="button"
+                className="courses-clear-search-btn"
+                onClick={() => setSearchKeyword("")}
+                title="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="courses-category-strip" role="tablist">
+          <button
+            type="button"
+            className={`category-chip-btn ${selectedCategory === "" ? "active" : ""}`}
+            onClick={() => setSelectedCategory("")}
+          >
+            All Tracks ({courses.length})
+          </button>
+          {CATEGORY_LIST.map((cat) => {
+            const count = courses.filter((c) => c.category?.toLowerCase() === cat.toLowerCase()).length
+            if (count === 0 && selectedCategory !== cat) return null
+            return (
+              <button
+                key={cat}
+                type="button"
+                className={`category-chip-btn ${selectedCategory === cat ? "active" : ""}`}
+                onClick={() => setSelectedCategory(selectedCategory === cat ? "" : cat)}
+              >
+                {cat} {count > 0 && `(${count})`}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      <div className="courses-filters">
-        <div className="search-filter">
-          <input
-            type="text"
-            placeholder="Search courses..."
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            className="search-input"
-          />
+      {/* Error alert */}
+      {error && (
+        <div style={{ padding: "12px 18px", borderRadius: "10px", background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+          ⚠️ {error}
         </div>
-        <div className="category-filter">
-          <Select
-            options={categoryOptions}
-            value={categoryOptions.find((o) => o.value === selectedCategory) || categoryOptions[0]}
-            onChange={(opt) => setSelectedCategory(opt ? opt.value : "")}
-            placeholder="Filter by category..."
-            isClearable
-          />
-        </div>
-      </div>
+      )}
 
-      {error && <div className="courses-error">⚠️ {error}</div>}
-
-      <div className="courses-grid">
-        {courses.map((course) => {
+      {/* ── Grid of Courses ── */}
+      <div className="courses-grid-container">
+        {filteredCourses.map((course) => {
           const thumb = thumbs[course._id] || getVideoThumbFromUrl(course.youtube) || ""
-          const status = progressMap[course._id] || "not-started"
-          const completed = status === "completed"
-          const percent = Math.round(statusToCompletion(status) * 100)
+          const progress = progressMap[course._id] || { status: "not-started", completion: 0 }
+          const isCompleted = progress.status === "completed"
+          const percent = Math.round(progress.completion * 100)
 
           return (
-            <div key={course._id} className="course-card">
-              <div className="course-media">
+            <motion.div
+              key={course._id}
+              className="modern-course-card"
+              layout
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {/* Media Preview */}
+              <div className="card-media-box" onClick={() => setActiveCourse(course)}>
                 {thumb ? (
-                  <img src={thumb || "/placeholder.svg"} alt={`${course.title} thumbnail`} className="thumb-img" />
+                  <img
+                    src={thumb}
+                    alt={`${course.title} thumbnail`}
+                    className="card-thumb-image"
+                    loading="lazy"
+                  />
                 ) : (
-                  <div className="thumb-fallback">
-                    <FaYoutube className="yt-icon" />
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#0f172a",
+                      color: "#6366f1",
+                      fontSize: "2.5rem",
+                    }}
+                  >
+                    <FaTv />
                   </div>
                 )}
-                <div className="media-overlay">
-                  <a
-                    className="dash-btn-primary btn-sm"
-                    href={course.youtube}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaYoutube /> Watch
-                  </a>
+
+                {/* Hover Play Button Overlay */}
+                <div className="card-play-overlay">
+                  <div className="overlay-play-circle">
+                    <FaPlay style={{ marginLeft: "3px" }} />
+                  </div>
+                </div>
+
+                <div className="in-app-badge">
+                  <FaTv style={{ fontSize: "0.68rem" }} /> Inbuilt Player
                 </div>
               </div>
 
-              <div className="course-info">
-                <div className="course-meta-row">
-                  <span className="course-pill">{course.category}</span>
-                  {completed && (
-                    <span className="status-pill completed">
+              {/* Card Body */}
+              <div className="card-content-wrap">
+                <div className="card-eyebrow-row">
+                  <span className="card-category-pill">{course.category || "General"}</span>
+                  {isCompleted && (
+                    <span className="card-status-pill completed">
                       <FaCheckCircle /> Completed
                     </span>
                   )}
+                  {!isCompleted && progress.status === "in-progress" && (
+                    <span className="card-status-pill in-progress">In Progress</span>
+                  )}
                 </div>
-                <h3 className="course-title">{course.title}</h3>
+
+                <h3 className="card-course-title" title={course.title}>
+                  {course.title}
+                </h3>
               </div>
 
-              <div className="course-progress">
-                <div className="dash-progress-bar">
+              {/* Progress bar */}
+              <div className="card-progress-section">
+                <div className="card-progress-bar-bg">
                   <div
-                    className={`dash-progress-fill ${percent >= 100 ? "completed" : ""}`}
+                    className={`card-progress-bar-fill ${isCompleted ? "completed" : ""}`}
                     style={{ width: `${percent}%` }}
                   />
                 </div>
-                <div className="progress-text">{percent}% completed</div>
+                <div className="card-progress-legend">
+                  <span>{percent}% Finished</span>
+                  <span>{isCompleted ? "Verified" : "Self-Paced"}</span>
+                </div>
               </div>
 
-              <div className="course-actions">
-                <a className="dash-btn-primary btn-sm" href={course.youtube} target="_blank" rel="noopener noreferrer">
-                  <FaYoutube /> Watch Playlist
-                </a>
-                <button className="dash-btn-outline btn-sm" onClick={() => onUpdateStatus(course, "in-progress")}>
-                  Set In Progress
-                </button>
-                <button className="course-complete-btn btn-sm" onClick={() => onUpdateStatus(course, "completed")}>
-                  <FaBullseye />
-                </button>
-              </div>
-
-              <div className="status-control">
-                <label className="sr-only" htmlFor={`status-${course._id}`}>
-                  Course status
-                </label>
-                <select
-                  id={`status-${course._id}`}
-                  className="status-select"
-                  value={status}
-                  onChange={(e) => onUpdateStatus(course, e.target.value)}
+              {/* Actions Footer */}
+              <div className="card-footer-actions">
+                <button
+                  type="button"
+                  className="btn-watch-course"
+                  onClick={() => setActiveCourse(course)}
                 >
-                  <option value="not-started">Not Started</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </select>
+                  <FaPlay style={{ fontSize: "0.75rem" }} /> Watch in App
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-ai-tutor"
+                  onClick={() => setActiveCourse(course)}
+                  title="Open AI Concept Tutor for this lecture"
+                >
+                  <FaBrain /> AI
+                </button>
+
+                <button
+                  type="button"
+                  className={`btn-toggle-complete ${isCompleted ? "completed" : ""}`}
+                  onClick={(e) => handleToggleComplete(course, e)}
+                  title={isCompleted ? "Mark as Incomplete" : "Mark as Completed"}
+                >
+                  <FaCheckCircle />
+                </button>
               </div>
-            </div>
+            </motion.div>
           )
         })}
-        {courses.length === 0 && (
-          <div className="courses-empty">
-            <FaYoutube className="empty-icon" />
+
+        {filteredCourses.length === 0 && !loading && (
+          <div className="courses-empty-card">
+            <FaBookOpen className="courses-empty-icon" />
             <h3>No courses found</h3>
-            <p>Try a different search or category filter.</p>
+            <p>
+              We couldn't find any courses matching your criteria. Try resetting the filters or searching
+              for another keyword.
+            </p>
+            <button
+              type="button"
+              className="courses-reset-btn"
+              onClick={() => {
+                setSelectedCategory("")
+                setSearchKeyword("")
+              }}
+            >
+              Reset Filters
+            </button>
           </div>
         )}
       </div>

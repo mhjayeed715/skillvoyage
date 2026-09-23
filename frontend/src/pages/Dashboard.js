@@ -36,6 +36,7 @@ import Select from "react-select"
 import LearningPaceTracker from "../components/LearningPaceTracker.js"
 import PeerComparison from "../components/PeerComparison.js"
 import CourseNotes from "../components/CourseNotes.js"
+import InbuiltPlayer from "../components/InbuiltPlayer"
 import { getBackendUrl } from "../utils/apiConfig"
 import "./Dashboard.css"
 
@@ -141,6 +142,7 @@ function Dashboard({ name, preferences = [] }) {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
+  const [playerCourse, setPlayerCourse] = useState(null)
 
   // Goals (local UX)
   const [goals, setGoals] = useState([])
@@ -160,13 +162,14 @@ function Dashboard({ name, preferences = [] }) {
         ])
         if (!mounted) return
         const dash = dashRes.data || {}
+        const watchHours = Math.round(((dash.totalWatchTime || 0) / 3600) * 10) / 10
         setDashboardData({
           progress: dash.progress || [],
           badges: dash.badges || [],
-          streak: dash.streak || 0,
+          streak: dash.streak || 1,
           goals: dash.goals || [],
           weeklyProgress: dash.weeklyProgress || [],
-          totalHours: dash.totalHours || 0,
+          totalHours: Math.max(dash.totalHours || 0, watchHours),
           completedCourses: dash.completedCourses || 0,
         })
         setAllCourses(Array.isArray(courseRes.data) ? courseRes.data : [])
@@ -529,7 +532,7 @@ function Dashboard({ name, preferences = [] }) {
   const RecommendationCard = ({ course }) => {
     const thumb = courseThumbs[course._id] || getVideoThumbFromUrl(course.youtube) || ""
     return (
-      <div className="recommendation-card">
+      <div className="recommendation-card" onClick={() => setPlayerCourse(course)} style={{ cursor: "pointer" }}>
         <div className="course-category">{course.category}</div>
         <div className="course-media">
           {thumb ? (
@@ -540,19 +543,20 @@ function Dashboard({ name, preferences = [] }) {
             </div>
           )}
           <div className="media-overlay">
-            <a
+            <button
+              type="button"
               className="dash-btn-primary btn-sm"
-              href={course.youtube}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Watch on YouTube"
+              onClick={(e) => {
+                e.stopPropagation()
+                setPlayerCourse(course)
+              }}
+              aria-label="Watch in Inbuilt Player"
             >
-              <FaYoutube /> Watch
-            </a>
+              <FaYoutube /> Watch in App
+            </button>
           </div>
         </div>
         <h4 className="course-title">{course.title}</h4>
-        {/* Removed Start button as requested; users can set status via StatusControl on the Courses tab */}
       </div>
     )
   }
@@ -585,6 +589,17 @@ function Dashboard({ name, preferences = [] }) {
 
   return (
     <div className="dashboard-content">
+      {/* Active Inbuilt YouTube Player with Watch Time Tracking */}
+      {playerCourse && (
+        <InbuiltPlayer
+          course={playerCourse}
+          onClose={() => setPlayerCourse(null)}
+          onProgressUpdated={(cId, st) => {
+            handleUpdateCourseStatus(cId, playerCourse.title, st)
+          }}
+        />
+      )}
+
       {/* Header */}
       <div className="dashboard-header">
         <div className="welcome-section">
@@ -866,15 +881,13 @@ function Dashboard({ name, preferences = [] }) {
                       </div>
 
                       <div className="course-actions">
-                        <a
+                        <button
+                          type="button"
                           className="dash-btn-primary btn-sm"
-                          href={course.youtube}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={() => setPlayerCourse(course)}
                         >
-                          <FaYoutube /> Watch Playlist
-                        </a>
-                        {/* Removed 'Set In Progress' button per request. Use selector below. */}
+                          <FaYoutube /> Watch in App
+                        </button>
                       </div>
 
                       <StatusControl course={course} />
