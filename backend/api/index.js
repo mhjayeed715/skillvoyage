@@ -90,10 +90,14 @@ const isAdmin = (req, res, next) => {
     .catch(() => res.status(500).json({ error: "Server error" }))
 }
 
-// Email (Gmail)
+// Email (Gmail) - with production fallbacks for Vercel Serverless
+const EMAIL_USER = process.env.EMAIL_USER || "mehrabjayeed715@gmail.com"
+const EMAIL_PASS = process.env.EMAIL_PASS || "jpbhhrtmndwnmnjv"
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://skillvoyageweb.vercel.app"
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
 })
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
@@ -102,13 +106,18 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 app.post("/api/signup", async (req, res) => {
   const { name, email, password, preferences } = req.body
+  const cleanEmail = email ? String(email).trim().toLowerCase() : ""
+  if (!cleanEmail) {
+    return res.status(400).json({ error: "Email is required" })
+  }
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10)
     const otp = generateOTP()
     const otpExpiry = Date.now() + 10 * 60 * 1000
     const user = new User({
       name,
-      email,
+      email: cleanEmail,
       password: hashedPassword,
       role: "user",
       preferences,
@@ -118,21 +127,21 @@ app.post("/api/signup", async (req, res) => {
     await user.save()
 
     const mailOptions = {
-      from: `"SkillVoyage" <${process.env.EMAIL_USER}>`,
-      to: email,
+      from: `"SkillVoyage" <${EMAIL_USER}>`,
+      to: cleanEmail,
       subject: "Verify Your SkillVoyage Account with OTP",
       html: `
-        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f8fafc;border-radius:12px">
-          <h2 style="color:#6366f1;margin-bottom:8px">SkillVoyage</h2>
-          <p style="color:#1f2937;font-size:16px">Your verification OTP is:</p>
-          <div style="background:#6366f1;color:#fff;font-size:32px;font-weight:700;letter-spacing:8px;text-align:center;padding:20px;border-radius:8px;margin:16px 0">${otp}</div>
-          <p style="color:#6b7280;font-size:14px">This OTP expires in <strong>10 minutes</strong>. If you did not create an account, please ignore this email.</p>
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px">
+          <h2 style="color: #4f46e5; margin: 0 0 12px 0; font-size: 24px; font-weight: 800">SkillVoyage</h2>
+          <p style="color: #0f172a; font-size: 16px; margin: 0 0 8px 0">Your verification OTP is:</p>
+          <div style="background: #4f46e5; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: 8px; text-align: center; padding: 18px; border-radius: 8px; margin: 16px 0">${otp}</div>
+          <p style="color: #64748b; font-size: 14px; margin: 0">This OTP expires in <strong>10 minutes</strong>. If you did not create an account, please ignore this email.</p>
         </div>
       `,
     }
-    console.log(`Sending OTP email to ${email}: ${otp}`)
+    console.log(`Sending OTP email to ${cleanEmail}: ${otp}`)
     const info = await transporter.sendMail(mailOptions)
-    console.log(`Email sent: ${info.response}`)
+    console.log(`Email sent: ${info.response || info.messageId}`)
     res.json({ message: "Signup successful - check your email for the OTP" })
   } catch (err) {
     if (err.code === 11000 && err.keyPattern?.email) {
@@ -145,17 +154,18 @@ app.post("/api/signup", async (req, res) => {
 
 app.post("/api/verify-otp", async (req, res) => {
   const { email, otp } = req.body
+  const cleanEmail = email ? String(email).trim().toLowerCase() : ""
   try {
-    const user = await User.findOne({ email, otp, otpExpiry: { $gt: Date.now() } })
+    const user = await User.findOne({ email: cleanEmail, otp, otpExpiry: { $gt: Date.now() } })
     if (!user) {
-      console.log(`Invalid or expired OTP for ${email}`)
+      console.log(`Invalid or expired OTP for ${cleanEmail}`)
       return res.status(400).json({ error: "Invalid or expired OTP" })
     }
     user.isVerified = true
     user.otp = null
     user.otpExpiry = null
     await user.save()
-    console.log(`Email verified for ${email}`)
+    console.log(`Email verified for ${cleanEmail}`)
     res.json({ message: "Email verified - you can now login" })
   } catch (err) {
     console.log(`OTP verification error: ${err.message}`)
@@ -165,19 +175,20 @@ app.post("/api/verify-otp", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body
+  const cleanEmail = email ? String(email).trim().toLowerCase() : ""
   try {
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email: cleanEmail })
     if (!user) {
-      console.log(`User not found: ${email}`)
+      console.log(`User not found: ${cleanEmail}`)
       return res.status(401).json({ error: "User not found" })
     }
     const passwordMatch = await bcrypt.compare(password, user.password)
     if (!passwordMatch) {
-      console.log(`Password mismatch for ${email}`)
+      console.log(`Password mismatch for ${cleanEmail}`)
       return res.status(401).json({ error: "Incorrect password" })
     }
     if (!user.isVerified) {
-      console.log(`Email not verified for ${email}`)
+      console.log(`Email not verified for ${cleanEmail}`)
       return res.status(401).json({ error: "Email not verified" })
     }
     const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: "24h" })
@@ -197,11 +208,16 @@ app.post("/api/login", async (req, res) => {
 
 /* ------------------------ Password Reset Flow ------------------------ */
 
-// Request reset link (always return 200 to prevent account enumeration)
+// Request reset link
 app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body
+  const cleanEmail = email ? String(email).trim().toLowerCase() : ""
+  if (!cleanEmail) {
+    return res.status(400).json({ error: "Email address is required" })
+  }
+
   try {
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email: cleanEmail })
     if (user) {
       const token = crypto.randomBytes(32).toString("hex")
       const tokenHash = crypto.createHash("sha256").update(token).digest("hex")
@@ -209,32 +225,51 @@ app.post("/api/forgot-password", async (req, res) => {
       user.resetPasswordExpires = Date.now() + 60 * 60 * 1000 // 1 hour
       await user.save()
 
-      const frontendBase = process.env.FRONTEND_URL || "http://localhost:3000"
-      const resetLink = `${frontendBase.replace(/\/$/, "")}/reset-password?token=${token}`
+      const frontendBase = FRONTEND_URL.replace(/\/$/, "")
+      const resetLink = `${frontendBase}/reset-password?token=${token}`
 
       const mailOptions = {
-        from: `"SkillVoyage" <${process.env.EMAIL_USER}>`,
+        from: `"SkillVoyage" <${EMAIL_USER}>`,
         to: user.email,
         subject: "Reset your SkillVoyage password",
         html: `
-          <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f8fafc;border-radius:12px">
-            <h2 style="color:#6366f1;margin-bottom:8px">SkillVoyage</h2>
-            <p style="color:#1f2937">You requested a password reset.</p>
-            <p style="color:#1f2937">Click the button below to set a new password. This link expires in <strong>1 hour</strong>.</p>
-            <a href="${resetLink}" style="display:inline-block;background:#6366f1;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin:16px 0">Reset Password</a>
-            <p style="color:#6b7280;font-size:13px">If you did not request this, you can safely ignore this email.</p>
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; padding: 36px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px;">
+            <div style="margin-bottom: 24px;">
+              <h2 style="margin: 0; color: #4f46e5; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">SkillVoyage</h2>
+            </div>
+            <h3 style="color: #0f172a; font-size: 18px; margin: 0 0 12px 0;">Reset Your Password</h3>
+            <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">
+              We received a request to reset the password for your SkillVoyage account (<strong>${user.email}</strong>). Click the button below to set a new password:
+            </p>
+            <div style="margin: 28px 0;">
+              <a href="${resetLink}" target="_blank" style="background-color: #4f46e5; color: #ffffff; padding: 13px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
+                Reset Password
+              </a>
+            </div>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;">
+              This link is valid for <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email.
+            </p>
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 24px 0;" />
+            <p style="color: #94a3b8; font-size: 12px; margin: 0; word-break: break-all;">
+              If the button doesn't work, copy and paste this link into your browser:<br />
+              <a href="${resetLink}" style="color: #4f46e5;">${resetLink}</a>
+            </p>
           </div>
         `,
       }
       try {
-        await transporter.sendMail(mailOptions)
-        console.log(`Reset email sent to ${user.email}`)
+        const info = await transporter.sendMail(mailOptions)
+        console.log(`Reset email sent to ${user.email}: ${info.response || info.messageId}`)
+        return res.json({ message: "Password reset link sent! Check your inbox and spam folder." })
       } catch (e) {
-        console.error("Failed to send reset email:", e.message)
+        console.error("Failed to send reset email via transporter:", e)
+        return res.status(500).json({ error: "Failed to send reset email. Please try again later." })
       }
+    } else {
+      console.log(`Password reset requested for non-existent email: ${cleanEmail}`)
+      // Neutral message to prevent email enumeration
+      return res.json({ message: "If an account exists for that email, a reset link has been sent." })
     }
-    // Always respond success (even if user doesn't exist)
-    res.json({ message: "If an account exists for that email, a reset link has been sent." })
   } catch (err) {
     console.error("Forgot password error:", err)
     res.status(500).json({ error: "Failed to process request" })
