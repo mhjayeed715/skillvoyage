@@ -596,7 +596,7 @@ function Dashboard({ name, preferences = [] }) {
         {/* Quick Stats */}
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-icon bg-blue-100 text-blue-600">
+            <div className="stat-icon stat-blue">
               <FaBookOpen />
             </div>
             <div className="stat-info">
@@ -605,7 +605,7 @@ function Dashboard({ name, preferences = [] }) {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon bg-green-100 text-green-600">
+            <div className="stat-icon stat-green">
               <FaClock />
             </div>
             <div className="stat-info">
@@ -614,7 +614,7 @@ function Dashboard({ name, preferences = [] }) {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon bg-orange-100 text-orange-600">
+            <div className="stat-icon stat-amber">
               <FaFire />
             </div>
             <div className="stat-info">
@@ -623,7 +623,7 @@ function Dashboard({ name, preferences = [] }) {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon bg-purple-100 text-purple-600">
+            <div className="stat-icon stat-purple">
               <FaTrophy />
             </div>
             <div className="stat-info">
@@ -747,10 +747,10 @@ function Dashboard({ name, preferences = [] }) {
             {/* Recommendations */}
             <div className="recommendations-section">
               <div className="section-header">
-                <FaGraduationCap style={{ fontSize: "1.5rem", color: "var(--color-primary)", marginRight: "12px" }} />
+                <FaGraduationCap className="section-header-icon" />
                 <div>
-                  <h3>Recommended Playlists</h3>
-                  <p>Curated from your learning preferences</p>
+                  <h3 className="section-header-title">Recommended Playlists</h3>
+                  <p className="section-header-desc">Curated from your learning preferences</p>
                 </div>
               </div>
               {!recommendations.length ? (

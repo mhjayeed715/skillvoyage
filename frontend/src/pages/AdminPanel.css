@@ -1,24 +1,20 @@
-/* Admin Panel — SkillVoyage (updated for dark design system) */
-/* Token bridge: old vars → new vars */
-:root {
+.admin-panel {
   --color-background:      var(--bg-base);
   --color-surface:         var(--bg-surface);
-  --color-text-primary:    var(--white);
+  --color-text-primary:    var(--text-primary);
   --color-text-secondary:  var(--text-secondary);
   --color-border:          var(--border);
   --color-border-light:    var(--border-subtle);
-  --color-primary:         var(--indigo-500);
+  --color-primary:         var(--indigo-600);
   --color-primary-dark:    var(--indigo-700);
-  --color-success:         var(--emerald-500);
-  --color-error:           var(--rose-500);
-  --color-hover:           var(--bg-elevated);
-}
+  --color-success:         var(--emerald-600);
+  --color-error:           var(--rose-600);
+  --color-hover:           var(--slate-50);
 
-.admin-panel {
   padding: 32px;
   min-height: 100dvh;
   background: var(--bg-base);
-  color: var(--white);
+  color: var(--text-primary);
   font-family: var(--font-body);
 }
 

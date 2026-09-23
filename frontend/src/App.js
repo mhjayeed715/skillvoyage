@@ -33,29 +33,30 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-/* ---------- React-Select dark theme styles ---------- */
+/* ---------- React-Select light theme styles ---------- */
 const selectStyles = {
     control: (base, state) => ({
         ...base,
-        background: 'var(--bg-elevated)',
-        border: `1.5px solid ${state.isFocused ? 'var(--indigo-500)' : 'var(--border)'}`,
+        background: 'var(--bg-surface)',
+        border: `1.5px solid ${state.isFocused ? 'var(--accent)' : 'var(--border)'}`,
         borderRadius: 'var(--radius-md)',
         boxShadow: state.isFocused ? '0 0 0 3px var(--accent-soft)' : 'none',
-        padding: '4px 8px',
-        minHeight: '50px',
-        '&:hover': { borderColor: 'var(--indigo-500)' },
+        padding: '2px 6px',
+        minHeight: '46px',
+        '&:hover': { borderColor: 'var(--accent)' },
     }),
     menu: (base) => ({
         ...base,
-        background: 'var(--bg-elevated)',
+        background: 'var(--bg-surface)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
-        boxShadow: 'var(--shadow-lg)',
+        boxShadow: 'var(--shadow-md)',
+        zIndex: 50,
     }),
     option: (base, state) => ({
         ...base,
-        background: state.isSelected ? 'var(--accent)' : state.isFocused ? 'rgba(99,102,241,0.12)' : 'transparent',
-        color: state.isSelected ? 'white' : 'var(--text-secondary)',
+        background: state.isSelected ? 'var(--accent)' : state.isFocused ? 'var(--accent-soft)' : 'transparent',
+        color: state.isSelected ? '#ffffff' : 'var(--text-primary)',
         fontSize: '0.9rem',
         cursor: 'pointer',
     }),
@@ -66,19 +67,19 @@ const selectStyles = {
     }),
     multiValueLabel: (base) => ({
         ...base,
-        color: 'var(--indigo-400)',
-        fontWeight: 500,
+        color: 'var(--accent)',
+        fontWeight: 600,
         fontSize: '0.85rem',
         padding: '3px 6px',
     }),
     multiValueRemove: (base) => ({
         ...base,
-        color: 'var(--indigo-400)',
-        ':hover': { background: 'rgba(99,102,241,0.25)', color: 'white' },
+        color: 'var(--accent)',
+        ':hover': { background: '#fee2e2', color: '#dc2626' },
     }),
-    placeholder: (base) => ({ ...base, color: 'var(--slate-400)', fontSize: '0.9rem' }),
-    singleValue: (base) => ({ ...base, color: 'var(--white)' }),
-    input: (base) => ({ ...base, color: 'var(--white)' }),
+    placeholder: (base) => ({ ...base, color: 'var(--text-muted)', fontSize: '0.9rem' }),
+    singleValue: (base) => ({ ...base, color: 'var(--text-primary)', fontWeight: 500 }),
+    input: (base) => ({ ...base, color: 'var(--text-primary)' }),
 };
 
 /* ---------- Preference options ---------- */
