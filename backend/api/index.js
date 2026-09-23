@@ -33,14 +33,38 @@ app.use(express.json())
 app.use(cors())
 app.options("*", cors())
 
-// MongoDB Connection
+// MongoDB Connection with Serverless Caching
 const mongoURI =
   process.env.MONGO_URI ||
   "mongodb+srv://mehrabjayeed715:4C86IEgB0E40Fc1n@skillvoyage.vc9by.mongodb.net/skillvoyage?retryWrites=true&w=majority&appName=SkillVoyage"
-mongoose
-  .connect(mongoURI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB error:", err))
+
+let cachedDb = null
+
+async function connectToDatabase() {
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    return cachedDb
+  }
+  const db = await mongoose.connect(mongoURI, {
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
+  })
+  cachedDb = db
+  return db
+}
+
+// Ensure DB is connected for API requests
+app.use(async (req, res, next) => {
+  if (req.path === "/api/health" || req.method === "OPTIONS") {
+    return next()
+  }
+  try {
+    await connectToDatabase()
+    next()
+  } catch (err) {
+    console.error("Database connection failure:", err.message)
+    res.status(503).json({ error: "Service temporarily unavailable. Please try again." })
+  }
+})
 
 const JWT_SECRET = process.env.JWT_SECRET || "skillvoyage-secret-2025"
 
@@ -701,9 +725,11 @@ app.delete("/api/admin/courses/:id", authenticateToken, isAdmin, async (req, res
 
 /* ------------------------------- Server ------------------------------- */
 
-const PORT = process.env.PORT || 3001
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`)
-})
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3001
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT}`)
+  })
+}
 
 module.exports = app
