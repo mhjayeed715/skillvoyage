@@ -1,325 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Bar, Radar, Doughnut } from 'react-chartjs-2';
-import { 
-  FaUsers, 
-  FaMedal, 
+"use client"
+
+import { useState, useEffect } from "react"
+import { Bar, Radar, Doughnut } from "react-chartjs-2"
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  Tooltip,
+  Legend,
+  PointElement,
+} from "chart.js"
+import {
+  FaUsers,
+  FaMedal,
   FaChartBar,
   FaTrophy,
   FaArrowUp,
   FaArrowDown,
   FaEquals,
   FaEye,
-  FaEyeSlash
-} from 'react-icons/fa';
-import axios from 'axios';
+  FaEyeSlash,
+} from "react-icons/fa"
+import axios from "axios"
+import "./PeerComparison.css"
+
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, RadialLinearScale, Tooltip, Legend, PointElement)
 
 function PeerComparison() {
-  const [comparisonData, setComparisonData] = useState({
-    userStats: {
-      coursesCompleted: 0,
-      hoursStudied: 0,
-      averageScore: 0,
-      streakDays: 0,
-      badgesEarned: 0
-    },
-    peerAverages: {
-      coursesCompleted: 0,
-      hoursStudied: 0,
-      averageScore: 0,
-      streakDays: 0,
-      badgesEarned: 0
-    },
-    percentile: 0,
-    ranking: 0,
-    totalUsers: 0,
-    categoryComparison: {},
-    trends: {}
-  });
-  const [loading, setLoading] = useState(true);
-  const [isAnonymous, setIsAnonymous] = useState(true);
-  const [selectedMetric, setSelectedMetric] = useState('overall');
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [isAnonymous, setIsAnonymous] = useState(true)
 
   useEffect(() => {
-    fetchComparisonData();
-  }, [selectedMetric]);
-
-  const fetchComparisonData = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Mock data for now - replace with actual API call
-      const mockData = {
-        userStats: {
-          coursesCompleted: 12,
-          hoursStudied: 84,
-          averageScore: 87,
-          streakDays: 15,
-          badgesEarned: 8
-        },
-        peerAverages: {
-          coursesCompleted: 8,
-          hoursStudied: 56,
-          averageScore: 78,
-          streakDays: 10,
-          badgesEarned: 5
-        },
-        percentile: 78,
-        ranking: 245,
-        totalUsers: 1124,
-        categoryComparison: {
-          'Web Development': { user: 85, peer: 72 },
-          'Data Science': { user: 92, peer: 80 },
-          'Machine Learning': { user: 78, peer: 75 },
-          'UI/UX Design': { user: 88, peer: 70 }
-        },
-        trends: {
-          coursesCompleted: 'up',
-          hoursStudied: 'up',
-          averageScore: 'stable',
-          streakDays: 'up'
-        }
-      };
-      
-      // Simulate API call
-      setTimeout(() => {
-        setComparisonData(mockData);
-        setLoading(false);
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Error fetching comparison data:', error);
-      setLoading(false);
-    }
-  };
-
-  const getComparisonData = () => {
-    const { userStats, peerAverages } = comparisonData;
-    
-    return {
-      labels: ['Courses Completed', 'Hours Studied', 'Average Score', 'Streak Days', 'Badges Earned'],
-      datasets: [
-        {
-          label: 'You',
-          data: [
-            userStats.coursesCompleted,
-            userStats.hoursStudied,
-            userStats.averageScore,
-            userStats.streakDays,
-            userStats.badgesEarned
-          ],
-          backgroundColor: 'rgba(37, 99, 235, 0.8)',
-          borderColor: 'rgba(37, 99, 235, 1)',
-          borderWidth: 2,
-          borderRadius: 8,
-        },
-        {
-          label: 'Peer Average',
-          data: [
-            peerAverages.coursesCompleted,
-            peerAverages.hoursStudied,
-            peerAverages.averageScore,
-            peerAverages.streakDays,
-            peerAverages.badgesEarned
-          ],
-          backgroundColor: 'rgba(156, 163, 175, 0.6)',
-          borderColor: 'rgba(156, 163, 175, 1)',
-          borderWidth: 2,
-          borderRadius: 8,
-        },
-      ],
-    };
-  };
-
-  const getRadarData = () => {
-    const categories = Object.keys(comparisonData.categoryComparison);
-    const userScores = categories.map(cat => comparisonData.categoryComparison[cat]?.user || 0);
-    const peerScores = categories.map(cat => comparisonData.categoryComparison[cat]?.peer || 0);
-
-    return {
-      labels: categories,
-      datasets: [
-        {
-          label: 'Your Performance',
-          data: userScores,
-          borderColor: 'rgba(37, 99, 235, 1)',
-          backgroundColor: 'rgba(37, 99, 235, 0.2)',
-          pointBackgroundColor: 'rgba(37, 99, 235, 1)',
-          pointBorderColor: '#fff',
-          pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: 'rgba(37, 99, 235, 1)',
-        },
-        {
-          label: 'Peer Average',
-          data: peerScores,
-          borderColor: 'rgba(156, 163, 175, 1)',
-          backgroundColor: 'rgba(156, 163, 175, 0.2)',
-          pointBackgroundColor: 'rgba(156, 163, 175, 1)',
-          pointBorderColor: '#fff',
-          pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: 'rgba(156, 163, 175, 1)',
-        },
-      ],
-    };
-  };
-
-  const getPercentileData = () => {
-    return {
-      labels: ['Your Percentile', 'Below You'],
-      datasets: [
-        {
-          data: [comparisonData.percentile, 100 - comparisonData.percentile],
-          backgroundColor: [
-            'rgba(37, 99, 235, 0.8)',
-            'rgba(229, 231, 235, 0.6)',
-          ],
-          borderColor: [
-            'rgba(37, 99, 235, 1)',
-            'rgba(229, 231, 235, 1)',
-          ],
-          borderWidth: 2,
-        },
-      ],
-    };
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            size: 12,
-            weight: '500',
-          },
-        },
-      },
-      tooltip: {
-        backgroundColor: 'rgba(31, 41, 55, 0.9)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        borderColor: 'rgba(37, 99, 235, 1)',
-        borderWidth: 1,
-        cornerRadius: 8,
-        padding: 12,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-        },
-      },
-    },
-  };
-
-  const radarOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            size: 12,
-            weight: '500',
-          },
-        },
-      },
-    },
-    scales: {
-      r: {
-        angleLines: {
-          display: true,
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-        pointLabels: {
-          font: {
-            size: 11,
-          },
-        },
-        ticks: {
-          display: false,
-        },
-        suggestedMin: 0,
-        suggestedMax: 100,
-      },
-    },
-  };
-
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            size: 12,
-            weight: '500',
-          },
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            return context.label + ': ' + context.parsed + '%';
-          }
-        }
+    let mounted = true
+    ;(async () => {
+      setLoading(true)
+      try {
+        const token = localStorage.getItem("token")
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/peer-comparison`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (mounted) setData(res.data)
+      } catch (e) {
+        console.error("PeerComparison fetch error:", e.message)
+      } finally {
+        if (mounted) setLoading(false)
       }
-    },
-    cutout: '60%',
-  };
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const getTrendIcon = (trend) => {
     switch (trend) {
-      case 'up':
-        return <FaArrowUp className="text-green-500" />;
-      case 'down':
-        return <FaArrowDown className="text-red-500" />;
+      case "up":
+        return <FaArrowUp className="text-green-500" />
+      case "down":
+        return <FaArrowDown className="text-red-500" />
       default:
-        return <FaEquals className="text-yellow-500" />;
+        return <FaEquals className="text-yellow-500" />
     }
-  };
+  }
 
-  const getPerformanceLevel = () => {
-    if (comparisonData.percentile >= 90) return { text: 'Exceptional', color: 'text-purple-600', bg: 'bg-purple-100' };
-    if (comparisonData.percentile >= 75) return { text: 'Above Average', color: 'text-green-600', bg: 'bg-green-100' };
-    if (comparisonData.percentile >= 50) return { text: 'Average', color: 'text-blue-600', bg: 'bg-blue-100' };
-    if (comparisonData.percentile >= 25) return { text: 'Below Average', color: 'text-yellow-600', bg: 'bg-yellow-100' };
-    return { text: 'Needs Improvement', color: 'text-red-600', bg: 'bg-red-100' };
-  };
-
-  const performanceLevel = getPerformanceLevel();
-
-  if (loading) {
+  if (loading || !data) {
     return (
       <div className="peer-comparison">
         <div className="loading-container">
@@ -327,8 +74,94 @@ function PeerComparison() {
           <p>Loading peer comparison data...</p>
         </div>
       </div>
-    );
+    )
   }
+
+  const barData = {
+    labels: ["Courses Completed", "Hours Studied", "Average Score", "Streak Days", "Badges Earned"],
+    datasets: [
+      {
+        label: "You",
+        data: [
+          data.userStats.coursesCompleted,
+          data.userStats.hoursStudied,
+          data.userStats.averageScore,
+          data.userStats.streakDays,
+          data.userStats.badgesEarned,
+        ],
+        backgroundColor: "rgba(37, 99, 235, 0.8)",
+        borderColor: "rgba(37, 99, 235, 1)",
+        borderWidth: 2,
+        borderRadius: 8,
+      },
+      {
+        label: "Peer Average",
+        data: [
+          data.peerAverages.coursesCompleted,
+          data.peerAverages.hoursStudied,
+          data.peerAverages.averageScore,
+          data.peerAverages.streakDays,
+          data.peerAverages.badgesEarned,
+        ],
+        backgroundColor: "rgba(156, 163, 175, 0.6)",
+        borderColor: "rgba(156, 163, 175, 1)",
+        borderWidth: 2,
+        borderRadius: 8,
+      },
+    ],
+  }
+
+  const radarData = {
+    labels: Object.keys(data.categoryComparison || {}),
+    datasets: [
+      {
+        label: "Your Performance",
+        data: Object.values(data.categoryComparison || {}).map((v) => v.user || 0),
+        borderColor: "rgba(37, 99, 235, 1)",
+        backgroundColor: "rgba(37, 99, 235, 0.2)",
+        pointBackgroundColor: "rgba(37, 99, 235, 1)",
+      },
+      {
+        label: "Peer Average",
+        data: Object.values(data.categoryComparison || {}).map((v) => v.peer || 0),
+        borderColor: "rgba(156, 163, 175, 1)",
+        backgroundColor: "rgba(156, 163, 175, 0.2)",
+        pointBackgroundColor: "rgba(156, 163, 175, 1)",
+      },
+    ],
+  }
+
+  const doughnutData = {
+    labels: ["Your Percentile", "Below You"],
+    datasets: [
+      {
+        data: [data.percentile, 100 - data.percentile],
+        backgroundColor: ["rgba(37, 99, 235, 0.8)", "rgba(229, 231, 235, 0.6)"],
+        borderColor: ["rgba(37, 99, 235, 1)", "rgba(229, 231, 235, 1)"],
+        borderWidth: 2,
+      },
+    ],
+  }
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position: "top" } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } },
+      x: { grid: { display: false } },
+    },
+  }
+  const radarOptions = { responsive: true, maintainAspectRatio: false }
+  const doughnutOptions = { responsive: true, maintainAspectRatio: false, cutout: "60%" }
+
+  const performanceLevel = (() => {
+    if (data.percentile >= 90) return { text: "Exceptional", color: "text-purple-600", bg: "bg-purple-100" }
+    if (data.percentile >= 75) return { text: "Above Average", color: "text-green-600", bg: "bg-green-100" }
+    if (data.percentile >= 50) return { text: "Average", color: "text-blue-600", bg: "bg-blue-100" }
+    if (data.percentile >= 25) return { text: "Below Average", color: "text-yellow-600", bg: "bg-yellow-100" }
+    return { text: "Needs Improvement", color: "text-red-600", bg: "bg-red-100" }
+  })()
 
   return (
     <div className="peer-comparison">
@@ -338,19 +171,15 @@ function PeerComparison() {
             <FaUsers className="section-icon" />
             Peer Comparison
           </h3>
-          <p className="section-description">
-            See how your learning progress compares to other learners
-          </p>
+          <p className="section-description">See how your learning progress compares to other learners</p>
         </div>
-        
         <div className="header-controls">
           <button
             onClick={() => setIsAnonymous(!isAnonymous)}
-            className={`anonymity-toggle ${isAnonymous ? 'active' : ''}`}
-            title={isAnonymous ? 'Anonymous Mode On' : 'Anonymous Mode Off'}
+            className={`anonymity-toggle ${isAnonymous ? "active" : ""}`}
           >
-            {isAnonymous ? <FaEye /> : <FaEyeSlash />}
-            {isAnonymous ? 'Anonymous' : 'Public'}
+            {isAnonymous ? <FaEyeSlash /> : <FaEye />}
+            {isAnonymous ? "Anonymous" : "Public"}
           </button>
         </div>
       </div>
@@ -358,23 +187,20 @@ function PeerComparison() {
       <div className="ranking-banner">
         <div className="ranking-info">
           <div className="rank-badge">
-            <FaMedal className="rank-icon" />
-            <span className="rank-number">#{comparisonData.ranking}</span>
+            <FaTrophy className="rank-icon" />
+            <span className="rank-number">#{data.ranking}</span>
           </div>
           <div className="rank-details">
             <div className="rank-text">Your Ranking</div>
-            <div className="rank-subtext">out of {comparisonData.totalUsers} learners</div>
+            <div className="rank-subtext">out of {data.totalUsers} learners</div>
           </div>
         </div>
-        
         <div className="percentile-info">
           <div className={`performance-badge ${performanceLevel.bg} ${performanceLevel.color}`}>
-            <FaTrophy className="performance-icon" />
-            <span>{performanceLevel.text}</span>
+            <FaMedal className="performance-icon" />
+            {performanceLevel.text}
           </div>
-          <div className="percentile-text">
-            {comparisonData.percentile}th percentile
-          </div>
+          <div className="percentile-text">{data.percentile}th percentile</div>
         </div>
       </div>
 
@@ -382,160 +208,83 @@ function PeerComparison() {
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-label">Courses Completed</span>
-            {getTrendIcon(comparisonData.trends.coursesCompleted)}
+            {getTrendIcon(data.trends?.coursesCompleted)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.coursesCompleted}</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.coursesCompleted}</div>
+            <span className="user-value">{data.userStats.coursesCompleted}</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{data.peerAverages.coursesCompleted}</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.coursesCompleted > comparisonData.peerAverages.coursesCompleted 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-header">
             <span className="metric-label">Hours Studied</span>
-            {getTrendIcon(comparisonData.trends.hoursStudied)}
+            {getTrendIcon(data.trends?.hoursStudied)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.hoursStudied}h</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.hoursStudied}h</div>
+            <span className="user-value">{data.userStats.hoursStudied}</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{data.peerAverages.hoursStudied}</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.hoursStudied > comparisonData.peerAverages.hoursStudied 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-header">
-            <span className="metric-label">Average Score</span>
-            {getTrendIcon(comparisonData.trends.averageScore)}
+            <span className="metric-label">Streak Days</span>
+            {getTrendIcon(data.trends?.streakDays)}
           </div>
           <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.averageScore}%</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.averageScore}%</div>
+            <span className="user-value">{data.userStats.streakDays}</span>
+            <span className="vs-text">vs</span>
+            <span className="peer-value">{data.peerAverages.streakDays}</span>
           </div>
           <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.averageScore > comparisonData.peerAverages.averageScore 
-                ? 'Above' : 'Below'} peer average
-            </span>
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">Current Streak</span>
-            {getTrendIcon(comparisonData.trends.streakDays)}
-          </div>
-          <div className="metric-comparison">
-            <div className="user-value">{comparisonData.userStats.streakDays} days</div>
-            <div className="vs-text">vs</div>
-            <div className="peer-value">{comparisonData.peerAverages.streakDays} days</div>
-          </div>
-          <div className="metric-footer">
-            <span className="comparison-text">
-              {comparisonData.userStats.streakDays > comparisonData.peerAverages.streakDays 
-                ? 'Above' : 'Below'} peer average
-            </span>
+            <span className="comparison-text">You vs Peer Average</span>
           </div>
         </div>
       </div>
 
       <div className="charts-container">
-        <div className="chart-card full-width">
+        <div className="chart-card">
           <div className="chart-header">
-            <h4>Overall Performance Comparison</h4>
+            <h4>Performance Comparison</h4>
             <FaChartBar className="chart-icon" />
           </div>
           <div className="chart-wrapper">
-            <Bar data={getComparisonData()} options={chartOptions} />
+            <Bar data={barData} options={chartOptions} />
           </div>
         </div>
-
         <div className="chart-card">
           <div className="chart-header">
             <h4>Category Performance</h4>
             <FaUsers className="chart-icon" />
           </div>
           <div className="chart-wrapper">
-            <Radar data={getRadarData()} options={radarOptions} />
+            <Radar data={radarData} options={radarOptions} />
           </div>
         </div>
-
         <div className="chart-card">
           <div className="chart-header">
-            <h4>Your Percentile</h4>
+            <h4>Percentile Ranking</h4>
             <FaTrophy className="chart-icon" />
           </div>
           <div className="chart-wrapper">
-            <Doughnut data={getPercentileData()} options={doughnutOptions} />
+            <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
           <div className="percentile-display">
-            <div className="percentile-number">{comparisonData.percentile}%</div>
-            <div className="percentile-label">Better than {comparisonData.percentile}% of learners</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="insights-card">
-        <div className="insights-header">
-          <h4>Performance Insights</h4>
-        </div>
-        <div className="insights-grid">
-          <div className="insight-item">
-            <div className="insight-icon text-green-600">
-              <FaArrowUp />
-            </div>
-            <div className="insight-content">
-              <div className="insight-title">Strong Performance</div>
-              <div className="insight-text">
-                You're performing above average in {
-                  Object.entries(comparisonData.categoryComparison)
-                    .filter(([_, values]) => values.user > values.peer)
-                    .length
-                } out of {Object.keys(comparisonData.categoryComparison).length} categories
-              </div>
-            </div>
-          </div>
-          
-          <div className="insight-item">
-            <div className="insight-icon text-blue-600">
-              <FaUsers />
-            </div>
-            <div className="insight-content">
-              <div className="insight-title">Peer Network</div>
-              <div className="insight-text">
-                You're part of a community of {comparisonData.totalUsers} active learners
-              </div>
-            </div>
-          </div>
-          
-          <div className="insight-item">
-            <div className="insight-icon text-purple-600">
-              <FaTrophy />
-            </div>
-            <div className="insight-content">
-              <div className="insight-title">Achievement Level</div>
-              <div className="insight-text">
-                You've earned more badges than {comparisonData.percentile}% of learners
-              </div>
-            </div>
+            <div className="percentile-number">{data.percentile}%</div>
+            <div className="percentile-label">Better than peers</div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
-
-export default PeerComparison;
+export default PeerComparison
