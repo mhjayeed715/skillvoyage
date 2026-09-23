@@ -1,173 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import { Line, Bar } from 'react-chartjs-2';
-import { 
-  FaClock, 
-  FaChartLine, 
-  FaArrowUp,
-  FaArrowDown,
-  FaEquals,
-  FaLightbulb,
-  FaCalendarAlt
-} from 'react-icons/fa';
-import axios from 'axios';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Line, Bar } from "react-chartjs-2"
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+} from "chart.js"
+import { FaClock, FaChartLine, FaArrowUp, FaArrowDown, FaEquals, FaLightbulb, FaCalendarAlt } from "react-icons/fa"
+import axios from "axios"
+import "./LearningPaceTracker.css"
+
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, LineElement, PointElement)
 
 function LearningPaceTracker() {
   const [paceData, setPaceData] = useState({
     weeklyHours: [],
     coursesPerWeek: [],
     averagePace: 0,
-    recommendation: '',
-    trend: 'stable',
+    recommendation: "",
+    trend: "stable",
     weeklyGoal: 10,
-    currentWeekHours: 0
-  });
-  const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('4weeks');
+    currentWeekHours: 0,
+  })
+  const [loading, setLoading] = useState(true)
+  const [timeRange, setTimeRange] = useState("4weeks")
 
   useEffect(() => {
-    fetchPaceData();
-  }, [timeRange]);
-
-  const fetchPaceData = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Mock data for now - replace with actual API call
-      const mockData = {
-        weeklyHours: [8, 12, 6, 15, 10, 14, 9, 11],
-        coursesPerWeek: [2, 3, 1, 4, 2, 3, 2, 3],
-        averagePace: 2.5,
-        recommendation: 'Your learning pace is consistent! Try to maintain 10-12 hours per week for optimal progress.',
-        trend: 'up',
-        weeklyGoal: 10,
-        currentWeekHours: 9
-      };
-      
-      // Set data immediately
-      setPaceData(mockData);
-      setLoading(false);
-      
-    } catch (error) {
-      console.error('Error fetching pace data:', error);
-      setLoading(false);
+    let mounted = true
+    ;(async () => {
+      setLoading(true)
+      try {
+        const token = localStorage.getItem("token")
+        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/pace?range=${timeRange}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (mounted) setPaceData(res.data)
+      } catch (e) {
+        console.error("Pace fetch error:", e.message)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    })()
+    return () => {
+      mounted = false
     }
-  };
+  }, [timeRange])
+
+  const labels = (() => {
+    const w = paceData.weeklyHours.length
+    if (w === 12) return ["12w", "11w", "10w", "9w", "8w", "7w", "6w", "5w", "4w", "3w", "2w", "1w"]
+    if (w === 8) return ["8w", "7w", "6w", "5w", "4w", "3w", "2w", "1w"]
+    return ["4w", "3w", "2w", "1w"]
+  })()
 
   const weeklyHoursData = {
-    labels: ['4 weeks ago', '3 weeks ago', '2 weeks ago', 'Last week', 'This week'],
+    labels,
     datasets: [
       {
-        label: 'Hours Studied',
-        data: paceData.weeklyHours.slice(-5),
-        borderColor: 'rgba(37, 99, 235, 1)',
-        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        label: "Hours Studied",
+        data: paceData.weeklyHours.slice(-labels.length),
+        borderColor: "rgba(37, 99, 235, 1)",
+        backgroundColor: "rgba(37, 99, 235, 0.1)",
         tension: 0.4,
         fill: true,
-        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
-        pointBorderColor: 'white',
+        pointBackgroundColor: "rgba(37, 99, 235, 1)",
+        pointBorderColor: "white",
         pointBorderWidth: 2,
-        pointRadius: 6,
+        pointRadius: 5,
       },
       {
-        label: 'Weekly Goal',
-        data: Array(5).fill(paceData.weeklyGoal),
-        borderColor: 'rgba(245, 158, 11, 1)',
-        backgroundColor: 'transparent',
+        label: "Weekly Goal",
+        data: Array(labels.length).fill(paceData.weeklyGoal),
+        borderColor: "rgba(245, 158, 11, 1)",
+        backgroundColor: "transparent",
         borderDash: [5, 5],
         tension: 0,
         pointRadius: 0,
-      }
+      },
     ],
-  };
+  }
 
   const coursesData = {
-    labels: ['4 weeks ago', '3 weeks ago', '2 weeks ago', 'Last week', 'This week'],
+    labels,
     datasets: [
       {
-        label: 'Courses Completed',
-        data: paceData.coursesPerWeek.slice(-5),
-        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-        borderColor: 'rgba(16, 185, 129, 1)',
+        label: "Courses Completed",
+        data: paceData.coursesPerWeek.slice(-labels.length),
+        backgroundColor: "rgba(16, 185, 129, 0.8)",
+        borderColor: "rgba(16, 185, 129, 1)",
         borderWidth: 2,
         borderRadius: 8,
       },
     ],
-  };
+  }
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            size: 12,
-            weight: '500',
-          },
-        },
-      },
-      tooltip: {
-        backgroundColor: 'rgba(31, 41, 55, 0.9)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        borderColor: 'rgba(37, 99, 235, 1)',
-        borderWidth: 1,
-        cornerRadius: 8,
-        padding: 12,
-      },
-    },
+    plugins: { legend: { position: "top" } },
     scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            size: 11,
-          },
-        },
-      },
+      y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } },
+      x: { grid: { display: false } },
     },
-  };
+  }
 
   const getTrendIcon = () => {
     switch (paceData.trend) {
-      case 'up':
-        return <FaArrowUp className="text-green-500" />;
-      case 'down':
-        return <FaArrowDown className="text-red-500" />;
+      case "up":
+        return <FaArrowUp className="lp-text-green" />
+      case "down":
+        return <FaArrowDown className="lp-text-red" />
       default:
-        return <FaEquals className="text-yellow-500" />;
+        return <FaEquals className="lp-text-amber" />
     }
-  };
-  
-  const getTrendText = () => {
-    switch (paceData.trend) {
-      case 'up':
-        return 'Improving';
-      case 'down':
-        return 'Declining';
-      default:
-        return 'Stable';
-    }
-  };
+  }
 
-  const progressPercentage = (paceData.currentWeekHours / paceData.weeklyGoal) * 100;
+  const progressPercentage = Math.min((paceData.currentWeekHours / paceData.weeklyGoal) * 100, 100)
 
   if (loading) {
     return (
@@ -177,7 +132,7 @@ function LearningPaceTracker() {
           <p>Loading learning pace data...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -188,17 +143,10 @@ function LearningPaceTracker() {
             <FaClock className="section-icon" />
             Learning Pace Tracker
           </h3>
-          <p className="section-description">
-            Monitor your learning speed and get personalized pace recommendations
-          </p>
+          <p className="section-description">Monitor your learning speed and get personalized recommendations</p>
         </div>
-        
         <div className="time-range-selector">
-          <select 
-            value={timeRange} 
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="range-select"
-          >
+          <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="range-select">
             <option value="4weeks">Last 4 Weeks</option>
             <option value="8weeks">Last 8 Weeks</option>
             <option value="12weeks">Last 12 Weeks</option>
@@ -209,29 +157,26 @@ function LearningPaceTracker() {
       <div className="pace-stats-grid">
         <div className="stat-card">
           <div className="stat-header">
-            <FaChartLine className="stat-icon text-blue-600" />
+            <FaChartLine className="stat-icon lp-text-blue" />
             <span className="stat-label">Average Pace</span>
           </div>
           <div className="stat-value">{paceData.averagePace} courses/week</div>
           <div className="stat-trend">
             {getTrendIcon()}
             <span className={`trend-text ${paceData.trend}`}>
-              {getTrendText()}
+              {paceData.trend === "up" ? "Improving" : paceData.trend === "down" ? "Declining" : "Stable"}
             </span>
           </div>
         </div>
 
         <div className="stat-card">
           <div className="stat-header">
-            <FaCalendarAlt className="stat-icon text-green-600" />
+            <FaCalendarAlt className="stat-icon lp-text-green" />
             <span className="stat-label">This Week</span>
           </div>
           <div className="stat-value">{paceData.currentWeekHours}h studied</div>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill"
-              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-            ></div>
+          <div className="lp-progress-bar">
+            <div className="lp-progress-fill" style={{ width: `${progressPercentage}%` }}></div>
           </div>
           <div className="progress-text">
             {paceData.currentWeekHours}/{paceData.weeklyGoal}h goal ({Math.round(progressPercentage)}%)
@@ -249,7 +194,6 @@ function LearningPaceTracker() {
             <Line data={weeklyHoursData} options={chartOptions} />
           </div>
         </div>
-
         <div className="chart-card">
           <div className="chart-header">
             <h4>Courses Completed</h4>
@@ -268,16 +212,12 @@ function LearningPaceTracker() {
         </div>
         <p className="recommendation-text">{paceData.recommendation}</p>
         <div className="recommendation-actions">
-          <button className="btn-primary btn-sm">
-            Adjust Weekly Goal
-          </button>
-          <button className="btn-outline btn-sm">
-            View Detailed Analytics
-          </button>
+          <button className="dash-btn-primary btn-sm">Adjust Weekly Goal</button>
+          <button className="dash-btn-outline btn-sm">View Detailed Analytics</button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default LearningPaceTracker;
+export default LearningPaceTracker

@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { 
   FaStickyNote, FaPlus, FaEdit, FaTrash, FaSearch, 
-  FaFilter, FaSave, FaTimes, FaDownload, FaBookOpen, 
+  FaSave, FaTimes, FaDownload, FaBookOpen, 
   FaCalendarAlt, FaTag 
 } from 'react-icons/fa';
-import axios from 'axios';
 
 // Error Boundary for robustness
 class ErrorBoundary extends React.Component {
@@ -28,6 +26,39 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+const preferenceOptions = [
+  { value: 'Web Development', label: 'Web Development' },
+  { value: 'Data Science', label: 'Data Science' },
+  { value: 'Machine Learning', label: 'Machine Learning' },
+  { value: 'Artificial Intelligence', label: 'Artificial Intelligence' },
+  { value: 'Cybersecurity', label: 'Cybersecurity' },
+  { value: 'Cloud Computing', label: 'Cloud Computing' },
+  { value: 'DevOps', label: 'DevOps' },
+  { value: 'Mobile Development', label: 'Mobile Development' },
+  { value: 'Game Development', label: 'Game Development' },
+  { value: 'Blockchain', label: 'Blockchain' },
+  { value: 'UI/UX Design', label: 'UI/UX Design' },
+  { value: 'Graphic Design', label: 'Graphic Design' },
+  { value: 'Digital Marketing', label: 'Digital Marketing' },
+  { value: 'SEO', label: 'SEO' },
+  { value: 'Content Writing', label: 'Content Writing' },
+  { value: 'Video Editing', label: 'Video Editing' },
+  { value: 'Photography', label: 'Photography' },
+  { value: '3D Modeling', label: '3D Modeling' },
+  { value: 'Animation', label: 'Animation' },
+  { value: 'Software Engineering', label: 'Software Engineering' },
+  { value: 'Database Management', label: 'Database Management' },
+  { value: 'Network Administration', label: 'Network Administration' },
+  { value: 'System Administration', label: 'System Administration' },
+  { value: 'Project Management', label: 'Project Management' },
+  { value: 'Product Management', label: 'Product Management' },
+  { value: 'Business Analysis', label: 'Business Analysis' },
+  { value: 'Data Analysis', label: 'Data Analysis' },
+  { value: 'Data Visualization', label: 'Data Visualization' },
+  { value: 'Statistics', label: 'Statistics' },
+  { value: 'Mathematics', label: 'Mathematics' },
+];
+
 const CourseNotes = () => {
   const [notes, setNotes] = useState([]);
   const [filteredNotes, setFilteredNotes] = useState([]);
@@ -46,39 +77,6 @@ const CourseNotes = () => {
     color: '#ffffff',
   });
 
-  const preferenceOptions = [
-    { value: 'Web Development', label: 'Web Development' },
-    { value: 'Data Science', label: 'Data Science' },
-    { value: 'Machine Learning', label: 'Machine Learning' },
-    { value: 'Artificial Intelligence', label: 'Artificial Intelligence' },
-    { value: 'Cybersecurity', label: 'Cybersecurity' },
-    { value: 'Cloud Computing', label: 'Cloud Computing' },
-    { value: 'DevOps', label: 'DevOps' },
-    { value: 'Mobile Development', label: 'Mobile Development' },
-    { value: 'Game Development', label: 'Game Development' },
-    { value: 'Blockchain', label: 'Blockchain' },
-    { value: 'UI/UX Design', label: 'UI/UX Design' },
-    { value: 'Graphic Design', label: 'Graphic Design' },
-    { value: 'Digital Marketing', label: 'Digital Marketing' },
-    { value: 'SEO', label: 'SEO' },
-    { value: 'Content Writing', label: 'Content Writing' },
-    { value: 'Video Editing', label: 'Video Editing' },
-    { value: 'Photography', label: 'Photography' },
-    { value: '3D Modeling', label: '3D Modeling' },
-    { value: 'Animation', label: 'Animation' },
-    { value: 'Software Engineering', label: 'Software Engineering' },
-    { value: 'Database Management', label: 'Database Management' },
-    { value: 'Network Administration', label: 'Network Administration' },
-    { value: 'System Administration', label: 'System Administration' },
-    { value: 'Project Management', label: 'Project Management' },
-    { value: 'Product Management', label: 'Product Management' },
-    { value: 'Business Analysis', label: 'Business Analysis' },
-    { value: 'Data Analysis', label: 'Data Analysis' },
-    { value: 'Data Visualization', label: 'Data Visualization' },
-    { value: 'Statistics', label: 'Statistics' },
-    { value: 'Mathematics', label: 'Mathematics' },
-  ];
-
   const availableTags = useMemo(() => [
     'Important', 'Review', 'Question', 'Concept', 'Example',
     'Definition', 'Formula', 'Todo', 'Assignment', 'Project',
@@ -92,7 +90,7 @@ const CourseNotes = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      // eslint-disable-next-line no-unused-vars
       setCourses(preferenceOptions.map((course, index) => ({
         _id: `course${index + 1}`,
         title: course.label,
@@ -135,6 +133,7 @@ const CourseNotes = () => {
     } finally {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
