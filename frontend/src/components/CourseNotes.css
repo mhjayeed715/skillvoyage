@@ -368,9 +368,12 @@
   font-size: 14px;
 }
 
-.form-input,
-.form-textarea,
-.form-select {
+.course-notes .form-input,
+.course-notes .form-textarea,
+.course-notes .form-select,
+.note-modal .form-input,
+.note-modal .form-textarea,
+.note-modal .form-select {
   width: 100%;
   padding: 12px 16px;
   border: 2px solid #e5e7eb;
@@ -381,14 +384,18 @@
   transition: border-color 0.3s ease;
 }
 
-.form-textarea {
+.course-notes .form-textarea,
+.note-modal .form-textarea {
   min-height: 120px;
   resize: vertical;
 }
 
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
+.course-notes .form-input:focus,
+.course-notes .form-textarea:focus,
+.course-notes .form-select:focus,
+.note-modal .form-input:focus,
+.note-modal .form-textarea:focus,
+.note-modal .form-select:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);

@@ -271,38 +271,42 @@ body.sidebar-collapsed .main-content {
   width: 100%;
 }
 
-.form-input-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--slate-400);
-  font-size: 0.95rem;
-  pointer-events: none;
-  z-index: 2;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.form-input-wrap .form-input-icon {
+  position: absolute !important;
+  left: 16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: var(--slate-400) !important;
+  font-size: 1rem !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-.form-input {
-  width: 100%;
-  height: 48px;
-  background: #ffffff;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0 44px 0 42px;
-  font-size: 0.95rem;
-  color: var(--slate-900);
-  transition: all var(--transition-fast);
-  outline: none;
-  box-sizing: border-box;
+.form-input-wrap .form-input,
+.auth-card .form-input,
+.auth-page .form-input {
+  width: 100% !important;
+  height: 48px !important;
+  background: #ffffff !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0 46px 0 48px !important;
+  font-size: 0.95rem !important;
+  color: var(--slate-900) !important;
+  transition: all var(--transition-fast) !important;
+  outline: none !important;
+  box-sizing: border-box !important;
 }
 
-.form-input:focus {
-  border-color: var(--indigo-600);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+.form-input-wrap .form-input:focus,
+.auth-card .form-input:focus,
+.auth-page .form-input:focus {
+  border-color: var(--indigo-600) !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12) !important;
 }
 
 .form-input::placeholder {
@@ -318,27 +322,27 @@ body.sidebar-collapsed .main-content {
 }
 
 /* Password Eye Toggle */
-.form-input-right {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--slate-400);
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-xs);
-  transition: color var(--transition-fast);
-  z-index: 2;
-  font-size: 1rem;
+.form-input-wrap .form-input-right {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: none !important;
+  border: none !important;
+  color: var(--slate-400) !important;
+  cursor: pointer !important;
+  padding: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--radius-xs) !important;
+  transition: color var(--transition-fast) !important;
+  z-index: 10 !important;
+  font-size: 1.05rem !important;
 }
 
-.form-input-right:hover {
-  color: var(--indigo-600);
+.form-input-wrap .form-input-right:hover {
+  color: var(--indigo-600) !important;
 }
 
 /* Forgot Password Link */
