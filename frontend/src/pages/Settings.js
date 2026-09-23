@@ -10,9 +10,11 @@ import {
   FaMoon,
   FaSun
 } from 'react-icons/fa';
+import { getBackendUrl } from '../utils/apiConfig';
 import './Settings.css';
 
 function Settings({ preferences, setUserPreferences }) {
+    const backendUrl = getBackendUrl();
     const [newPreferences, setNewPreferences] = useState(
         preferences.map(p => ({ value: p, label: p }))
     );
@@ -78,7 +80,7 @@ function Settings({ preferences, setUserPreferences }) {
         
         try {
             const response = await axios.put(
-                `${process.env.REACT_APP_BACKEND_URL}/api/user`,
+                `${backendUrl}/api/user`,
                 { preferences: selectedPreferences },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

@@ -25,11 +25,13 @@ import {
   FaEyeSlash,
 } from "react-icons/fa"
 import axios from "axios"
+import { getBackendUrl } from "../utils/apiConfig"
 import "./PeerComparison.css"
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, RadialLinearScale, Tooltip, Legend, PointElement)
 
 function PeerComparison() {
+  const backendUrl = getBackendUrl()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAnonymous, setIsAnonymous] = useState(true)
@@ -40,7 +42,7 @@ function PeerComparison() {
       setLoading(true)
       try {
         const token = localStorage.getItem("token")
-        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/peer-comparison`, {
+        const res = await axios.get(`${backendUrl}/api/peer-comparison`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (mounted) setData(res.data)

@@ -16,9 +16,11 @@ import {
   FaUpload,
 } from "react-icons/fa"
 import axios from "axios"
+import { getBackendUrl } from "../utils/apiConfig"
 import "./Profile.css"
 
 function Profile({ name, email, preferences }) {
+  const backendUrl = getBackendUrl()
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
@@ -63,7 +65,7 @@ function Profile({ name, email, preferences }) {
     setLoading(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/profile`, {
+      const response = await axios.get(`${backendUrl}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
@@ -111,7 +113,7 @@ function Profile({ name, email, preferences }) {
         ...payload
       } = tempProfileData
 
-      const response = await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/profile`, payload, {
+      const response = await axios.put(`${backendUrl}/api/profile`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
@@ -174,7 +176,7 @@ function Profile({ name, email, preferences }) {
       formData.append("avatar", file)
 
       const token = localStorage.getItem("token")
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/profile/upload-avatar`, formData, {
+      const response = await axios.post(`${backendUrl}/api/profile/upload-avatar`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

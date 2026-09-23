@@ -15,11 +15,13 @@ import {
 } from "chart.js"
 import { FaClock, FaChartLine, FaArrowUp, FaArrowDown, FaEquals, FaLightbulb, FaCalendarAlt } from "react-icons/fa"
 import axios from "axios"
+import { getBackendUrl } from "../utils/apiConfig"
 import "./LearningPaceTracker.css"
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, LineElement, PointElement)
 
 function LearningPaceTracker() {
+  const backendUrl = getBackendUrl()
   const [paceData, setPaceData] = useState({
     weeklyHours: [],
     coursesPerWeek: [],
@@ -38,7 +40,7 @@ function LearningPaceTracker() {
       setLoading(true)
       try {
         const token = localStorage.getItem("token")
-        const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/pace?range=${timeRange}`, {
+        const res = await axios.get(`${backendUrl}/api/pace?range=${timeRange}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (mounted) setPaceData(res.data)

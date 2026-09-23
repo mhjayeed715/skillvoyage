@@ -16,9 +16,11 @@ import {
   FaTrophy,
 } from "react-icons/fa"
 import { useLocation, useNavigate } from "react-router-dom"
+import { getBackendUrl } from "../utils/apiConfig"
 import "./AdminPanel.css"
 
 function AdminPanel() {
+  const backendUrl = getBackendUrl()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -96,10 +98,10 @@ function AdminPanel() {
     const token = localStorage.getItem("token")
     try {
       const [usersRes, coursesRes] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/admin/users`, {
+        axios.get(`${backendUrl}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/admin/courses`, {
+        axios.get(`${backendUrl}/api/admin/courses`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ])
@@ -138,7 +140,7 @@ function AdminPanel() {
     const token = localStorage.getItem("token")
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/courses`,
+        `${backendUrl}/api/admin/courses`,
         { title: title.trim(), youtube: youtubeUrl.trim(), category },
         { headers: { Authorization: `Bearer ${token}` } },
       )
@@ -176,7 +178,7 @@ function AdminPanel() {
     const token = localStorage.getItem("token")
     try {
       const res = await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/users/${selectedUser}`,
+        `${backendUrl}/api/admin/users/${selectedUser}`,
         {
           name: editName.trim(),
           email: editEmail.trim(),
@@ -202,7 +204,7 @@ function AdminPanel() {
     setLoading(true)
     const token = localStorage.getItem("token")
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/admin/users/${userId}`, {
+      await axios.delete(`${backendUrl}/api/admin/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       setMessage("User deleted successfully!")
@@ -235,7 +237,7 @@ function AdminPanel() {
     const token = localStorage.getItem("token")
     try {
       const res = await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/api/admin/courses/${selectedCourse}`,
+        `${backendUrl}/api/admin/courses/${selectedCourse}`,
         { title: title.trim(), youtube: youtubeUrl.trim(), category },
         { headers: { Authorization: `Bearer ${token}` } },
       )
@@ -259,7 +261,7 @@ function AdminPanel() {
     setLoading(true)
     const token = localStorage.getItem("token")
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/admin/courses/${courseId}`, {
+      await axios.delete(`${backendUrl}/api/admin/courses/${courseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       setMessage("Course deleted successfully!")

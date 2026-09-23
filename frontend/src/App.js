@@ -11,6 +11,7 @@ import Courses from './pages/Courses';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Homepage from './pages/Homepage';
+import { getBackendUrl } from './utils/apiConfig';
 import './App.css';
 
 /* ---------- Error Boundary ---------- */
@@ -507,7 +508,7 @@ function App() {
     const [role, setRole] = useState('user');
     const [isLoading, setIsLoading] = useState(true);
 
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+    const backendUrl = getBackendUrl();
 
     // Apply theme
     useEffect(() => {

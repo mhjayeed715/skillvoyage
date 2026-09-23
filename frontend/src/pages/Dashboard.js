@@ -36,6 +36,7 @@ import Select from "react-select"
 import LearningPaceTracker from "../components/LearningPaceTracker.js"
 import PeerComparison from "../components/PeerComparison.js"
 import CourseNotes from "../components/CourseNotes.js"
+import { getBackendUrl } from "../utils/apiConfig"
 import "./Dashboard.css"
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, LineElement, PointElement)
@@ -120,7 +121,7 @@ const CATEGORY_LIST = [
 ]
 
 function Dashboard({ name, preferences = [] }) {
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || ""
+  const backendUrl = getBackendUrl()
 
   const [dashboardData, setDashboardData] = useState({
     progress: [],

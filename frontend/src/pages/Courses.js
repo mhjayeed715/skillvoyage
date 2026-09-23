@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import axios from "axios"
 import Select from "react-select"
 import { FaYoutube, FaBullseye, FaCheckCircle } from "react-icons/fa"
+import { getBackendUrl } from "../utils/apiConfig"
 import "./Courses.css"
 
 function extractYouTubeIds(url) {
@@ -85,7 +86,7 @@ const CATEGORY_LIST = [
 ]
 
 function Courses() {
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || ""
+  const backendUrl = getBackendUrl()
   const [courses, setCourses] = useState([])
   const [selectedCategory, setSelectedCategory] = useState("")
   const [searchKeyword, setSearchKeyword] = useState("")

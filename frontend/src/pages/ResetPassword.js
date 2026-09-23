@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaLock, FaEye, FaEyeSlash, FaCheckCircle } from 'react-icons/fa';
+import { getBackendUrl } from '../utils/apiConfig';
 import './ResetPassword.css';
 
 function ResetPassword({ backendUrl }) {
@@ -13,7 +14,7 @@ function ResetPassword({ backendUrl }) {
     const [done, setDone] = useState(false);
     const navigate = useNavigate();
 
-    const apiBase = backendUrl || process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
+    const apiBase = backendUrl || getBackendUrl();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
