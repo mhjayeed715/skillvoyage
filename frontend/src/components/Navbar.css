@@ -1,9 +1,9 @@
 /* ============================================================
-   Navbar.css — Google Classroom Style Topbar & Collapsible Sidebar
-   High-end Apple/Google tier interaction with fluid transitions
+   Navbar.css — Deep Navy UniShareSync Style Navigation
+   Matches Reference Screenshot 2 with Pinned Bottom Logout
    ============================================================ */
 
-/* ---------- Google Classroom Style Fixed Topbar ---------- */
+/* ---------- Fixed Topbar ---------- */
 .app-topbar {
   position: fixed;
   top: 0;
@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 200;
+  z-index: 150;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
@@ -28,10 +28,9 @@
   gap: 16px;
 }
 
-/* Ripple Hamburger Menu Button */
 .topbar-hamburger-btn {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   background: transparent;
@@ -42,7 +41,6 @@
   font-size: 1.15rem;
   cursor: pointer;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-  outline: none;
 }
 
 .topbar-hamburger-btn:hover {
@@ -51,71 +49,42 @@
   transform: scale(1.04);
 }
 
-.topbar-hamburger-btn:active {
-  background: var(--bg-active);
-  transform: scale(0.96);
-}
-
-/* Brand Identity */
 .topbar-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  user-select: none;
 }
 
 .topbar-logo-wrap {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--indigo-50);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: var(--indigo-50);
 }
 
 .topbar-logo-img {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
 }
 
 .topbar-logo-fallback {
   color: var(--accent);
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .topbar-brand-title {
   font-family: var(--font-display);
-  font-size: 1.18rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.025em;
 }
 
-/* Breadcrumbs */
-.topbar-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: 8px;
-}
-
-.breadcrumb-divider {
-  color: var(--slate-300);
-  font-size: 1.1rem;
-  font-weight: 300;
-}
-
-.breadcrumb-current {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--slate-600);
-}
-
-/* Right User Profile Pill & Actions */
 .topbar-right {
   display: flex;
   align-items: center;
@@ -136,7 +105,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -144,7 +113,6 @@
   font-family: var(--font-display);
   font-size: 0.88rem;
   font-weight: 700;
-  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
 }
 
 .topbar-user-info {
@@ -167,43 +135,21 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--accent);
+  color: #0d9488;
 }
 
 .topbar-role-tag.admin {
   color: #d97706;
 }
 
-.topbar-logout-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.topbar-logout-btn:hover {
-  background: var(--rose-50);
-  border-color: #fecdd3;
-  color: var(--rose-600);
-}
-
 /* ---------- Backdrop for Mobile Drawer ---------- */
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  top: 64px;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(11, 23, 44, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 150;
+  z-index: 180;
   animation: fadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -212,84 +158,165 @@
   to   { opacity: 1; }
 }
 
-/* ---------- Google Classroom Collapsible Sidebar ---------- */
-.app-sidebar {
+/* ---------- Deep Navy Sidebar (Matches Screenshot 2) ---------- */
+.app-sidebar.dark-navy-theme {
   position: fixed;
   left: 0;
-  top: 64px;
+  top: 0;
   bottom: 0;
   width: 250px;
-  background: var(--bg-surface);
-  border-right: 1px solid var(--border);
+  background-color: #0d1b30;
+  color: #ffffff;
+  border-right: 1px solid #162a4a;
   display: flex;
   flex-direction: column;
-  z-index: 160;
+  z-index: 190;
   transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 2px 0 6px rgba(15, 23, 42, 0.02);
+  box-shadow: 4px 0 20px rgba(8, 16, 32, 0.25);
   overflow-x: hidden;
-  overflow-y: auto;
+  font-family: var(--font-display);
 }
 
-/* Collapsed Desktop State (Icon Rail) */
-.app-sidebar.is-collapsed {
+/* Collapsed Desktop State */
+.app-sidebar.dark-navy-theme.is-collapsed {
   width: 72px;
 }
 
-/* Navigation List */
-.sidebar-nav {
-  flex: 1;
-  padding: 16px 10px;
-}
-
-.sidebar-section-title {
-  padding: 0 14px 10px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--slate-400);
-}
-
-.sidebar-nav-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-}
-
-.sidebar-nav-item {
-  width: 100%;
-}
-
-.sidebar-nav-link {
+/* Sidebar Brand Header (Screenshot 2 Top Row) */
+.sidebar-brand-header {
+  height: 64px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 11px 14px;
-  border-radius: 12px;
-  color: var(--slate-600);
+  justify-content: space-between;
+  border-bottom: 1px solid #162a4a;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   text-decoration: none;
-  font-size: 0.92rem;
-  font-weight: 500;
-  position: relative;
-  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-brand-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(45, 212, 191, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-brand-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.sidebar-brand-fallback {
+  color: #2dd4bf;
+  font-size: 1.1rem;
+}
+
+.sidebar-brand-text {
+  font-family: var(--font-display);
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.025em;
   white-space: nowrap;
 }
 
-.sidebar-nav-link:hover {
-  background: var(--slate-100);
-  color: var(--slate-900);
+/* Header Hamburger Button (Screenshot 2 Right Top) */
+.sidebar-header-hamburger-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #8fa4c2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
 }
 
-.sidebar-nav-link.active {
-  background: var(--indigo-50);
-  color: var(--indigo-600);
+.sidebar-header-hamburger-btn:hover {
+  background: #162a4a;
+  color: #ffffff;
+}
+
+/* Navigation Container */
+.sidebar-nav-container {
+  flex: 1;
+  padding: 20px 14px 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* MENU Label (Screenshot 2) */
+.sidebar-menu-label {
+  padding: 0 12px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6882a6;
+}
+
+.sidebar-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-menu-item {
+  width: 100%;
+}
+
+/* Rounded Navigation Button (Screenshot 2 Style) */
+.sidebar-nav-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  outline: none;
 }
 
-.nav-icon-container {
+.sidebar-nav-button:hover {
+  background: #14243d;
+  color: #ffffff;
+}
+
+/* Active Teal Style (Screenshot 2 "Dashboard" button) */
+.sidebar-nav-button.active-teal {
+  background: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.nav-btn-icon-wrapper {
   width: 22px;
   height: 22px;
   display: flex;
@@ -298,104 +325,72 @@
   flex-shrink: 0;
 }
 
-.sidebar-nav-icon {
-  font-size: 1.12rem;
+.nav-icon-glyph {
+  font-size: 1.15rem;
 }
 
-.sidebar-nav-link.active .sidebar-nav-icon {
-  color: var(--indigo-600);
+.sidebar-nav-button.active-teal .nav-icon-glyph {
+  color: #ffffff;
 }
 
-.sidebar-nav-text {
+.nav-btn-text {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
-.active-indicator-bar {
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 3.5px;
-  background: var(--indigo-600);
-  border-radius: 0 4px 4px 0;
+/* ---------- Pinned Bottom Section (Settings & Logout) ---------- */
+.sidebar-bottom-pinned {
+  padding: 14px;
+  border-top: 1px solid #162a4a;
+  background: #0d1b30;
+  flex-shrink: 0;
 }
 
-.app-sidebar.is-collapsed .active-indicator-bar {
+/* Logout Button Below in Navbar (User Request) */
+.sidebar-nav-button.logout-button {
+  color: #94a3b8;
+}
+
+.sidebar-nav-button.logout-button:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.sidebar-nav-button.logout-button:hover .nav-icon-glyph {
+  color: #f87171;
+}
+
+/* Collapsed Overrides */
+.app-sidebar.dark-navy-theme.is-collapsed .sidebar-brand-text,
+.app-sidebar.dark-navy-theme.is-collapsed .sidebar-menu-label,
+.app-sidebar.dark-navy-theme.is-collapsed .nav-btn-text {
   display: none;
 }
 
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 12px 10px;
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
+.app-sidebar.dark-navy-theme.is-collapsed .sidebar-brand-header {
+  padding: 0 14px;
   justify-content: center;
 }
 
-.sidebar-rail-toggle-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  color: var(--slate-500);
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
+.app-sidebar.dark-navy-theme.is-collapsed .sidebar-brand-left {
+  display: none;
 }
 
-.sidebar-rail-toggle-btn:hover {
-  background: var(--slate-100);
-  color: var(--slate-800);
-  border-color: var(--border);
+.app-sidebar.dark-navy-theme.is-collapsed .sidebar-nav-button {
+  justify-content: center;
+  padding: 12px;
 }
 
 /* ---------- Responsive Breakpoints ---------- */
 @media (max-width: 1024px) {
-  .app-sidebar {
-    top: 64px;
+  .app-sidebar.dark-navy-theme {
     transform: translateX(-100%);
     width: 270px !important;
-    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.12);
   }
 
-  .app-sidebar.is-mobile-open {
+  .app-sidebar.dark-navy-theme.is-mobile-open {
     transform: translateX(0);
-  }
-
-  .topbar-breadcrumb {
-    display: none;
-  }
-
-  .topbar-user-info {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .app-topbar {
-    padding: 0 16px;
-  }
-
-  .topbar-brand-title {
-    display: none;
-  }
-
-  .logout-text {
-    display: none;
-  }
-
-  .topbar-logout-btn {
-    padding: 8px;
-    border-radius: 50%;
   }
 }

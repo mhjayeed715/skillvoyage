@@ -1,0 +1,232 @@
+/* ============================================================
+   Footer.css — Deep Navy 4-Column Footer
+   Matches Reference Screenshot with Precision
+   ============================================================ */
+
+.unishare-footer-root {
+  background-color: #0b1426;
+  color: #94a3b8;
+  border-top: 1px solid #16243d;
+  padding: 64px 32px 32px;
+  font-family: var(--font-display);
+}
+
+.unishare-footer-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* 4-Column Grid */
+.unishare-footer-grid {
+  display: grid;
+  grid-template-columns: 2.2fr 1.3fr 1.3fr 2fr;
+  gap: 40px;
+}
+
+/* Column 1: Brand */
+.brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-logo-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.footer-logo-fallback {
+  color: #38bdf8;
+  font-size: 1.1rem;
+}
+
+.footer-brand-heading {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.025em;
+}
+
+.footer-brand-mission {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #8fa0ba;
+  margin: 0;
+  max-width: 320px;
+}
+
+.footer-social-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.social-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #13223d;
+  border: 1px solid #1e3357;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.social-icon-btn:hover {
+  background: #1e3a66;
+  border-color: #38bdf8;
+  color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+/* Columns 2 & 3: Product & Support */
+.footer-col-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin: 0 0 18px;
+}
+
+.footer-links-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #8fa0ba;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chevron-icon {
+  font-size: 0.65rem;
+  color: #4b6382;
+  transition: transform 160ms, color 160ms;
+}
+
+.footer-nav-link:hover {
+  color: #38bdf8;
+  transform: translateX(3px);
+}
+
+.footer-nav-link:hover .chevron-icon {
+  color: #38bdf8;
+  transform: translateX(2px);
+}
+
+/* Column 4: Contact */
+.footer-contact-items {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.contact-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8fa0ba;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: color 160ms;
+}
+
+.contact-row-icon {
+  color: #2dd4bf;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.contact-link-row:hover {
+  color: #2dd4bf;
+}
+
+/* ---------- Bottom Legal Strip ---------- */
+.unishare-footer-bottom {
+  padding-top: 24px;
+  border-top: 1px solid #16243d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.copyright-text {
+  font-size: 0.82rem;
+  color: #627694;
+  margin: 0;
+}
+
+.bottom-legal-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.legal-link {
+  font-size: 0.82rem;
+  color: #8fa0ba;
+  text-decoration: none;
+  transition: color 160ms;
+}
+
+.legal-link:hover {
+  color: #ffffff;
+}
+
+/* ---------- Responsive Breakpoints ---------- */
+@media (max-width: 960px) {
+  .unishare-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .unishare-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .unishare-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

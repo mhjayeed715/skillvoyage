@@ -1,27 +1,31 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
-  FaBook, FaSignOutAlt, FaCog, FaUser,
-  FaChalkboardTeacher, FaTachometerAlt, FaUsers,
-  FaBars, FaPlus, FaChevronLeft, FaChevronRight,
+  FaBook,
+  FaSignOutAlt,
+  FaCog,
+  FaUser,
+  FaChalkboardTeacher,
+  FaTachometerAlt,
+  FaUsers,
+  FaBars,
+  FaPlus,
   FaCompass,
 } from "react-icons/fa"
 import "./Navbar.css"
 
-const userTabs = [
+const userPrimaryTabs = [
   { link: "/dashboard", label: "Dashboard", icon: FaTachometerAlt },
   { link: "/courses",   label: "Courses",   icon: FaChalkboardTeacher },
   { link: "/profile",   label: "Profile",   icon: FaUser },
-  { link: "/settings",  label: "Settings",  icon: FaCog },
 ]
 
-const adminTabs = [
+const adminPrimaryTabs = [
   { link: "/admin?tab=overview",    label: "Admin Overview", icon: FaTachometerAlt },
   { link: "/admin?tab=users",       label: "Users",          icon: FaUsers },
   { link: "/admin?tab=courses",     label: "Courses",        icon: FaBook },
   { link: "/admin?tab=add-course",  label: "Add Course",     icon: FaPlus },
   { link: "/profile",               label: "Profile",        icon: FaUser },
-  { link: "/settings",              label: "Settings",       icon: FaCog },
 ]
 
 function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
@@ -29,7 +33,7 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const tabs = role === "admin" ? adminTabs : userTabs
+  const primaryTabs = role === "admin" ? adminPrimaryTabs : userPrimaryTabs
 
   // Admin redirect on first mount
   useEffect(() => {
@@ -74,14 +78,6 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
     return location.pathname === path
   }
 
-  // Get current page name for topbar breadcrumb
-  const getCurrentPageTitle = () => {
-    const activeTab = tabs.find((t) => isActive(t.link))
-    if (activeTab) return activeTab.label
-    if (location.pathname.startsWith("/admin")) return "Admin Panel"
-    return "Workspace"
-  }
-
   const handleToggleSidebar = () => {
     if (window.innerWidth <= 1024) {
       setIsMobileDrawerOpen(!isMobileDrawerOpen)
@@ -100,20 +96,18 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
 
   return (
     <>
-      {/* ── Universal Google Classroom Style Top Navbar ── */}
+      {/* ── Top App Bar (Shows Hamburger & Breadcrumb / User Pill) ── */}
       <header className="app-topbar" role="banner">
         <div className="topbar-left">
-          {/* Hamburger Menu Toggle Button */}
           <button
             className="topbar-hamburger-btn"
             onClick={handleToggleSidebar}
-            aria-label={isCollapsed ? "Expand navigation drawer" : "Collapse navigation drawer"}
-            title="Main menu"
+            aria-label="Toggle navigation menu"
+            title="Toggle Menu"
           >
-            <FaBars aria-hidden="true" />
+            <FaBars />
           </button>
 
-          {/* Logo & Brand Identity */}
           <Link to={role === "admin" ? "/admin?tab=overview" : "/dashboard"} className="topbar-brand">
             <div className="topbar-logo-wrap">
               <img
@@ -131,15 +125,9 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
             </div>
             <span className="topbar-brand-title">SkillVoyage</span>
           </Link>
-
-          {/* Breadcrumb Separator & Active Page */}
-          <div className="topbar-breadcrumb">
-            <span className="breadcrumb-divider">/</span>
-            <span className="breadcrumb-current">{getCurrentPageTitle()}</span>
-          </div>
         </div>
 
-        {/* Right User Actions & Profile Pill */}
+        {/* Right User Meta */}
         <div className="topbar-right">
           <div className="topbar-user-badge">
             <div className="topbar-avatar" title={email}>
@@ -152,16 +140,6 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
               </span>
             </div>
           </div>
-
-          <button
-            onClick={handleLogout}
-            className="topbar-logout-btn"
-            title="Log Out"
-            aria-label="Log Out"
-          >
-            <FaSignOutAlt aria-hidden="true" />
-            <span className="logout-text">Exit</span>
-          </button>
         </div>
       </header>
 
@@ -174,32 +152,62 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
         />
       )}
 
-      {/* ── Collapsible Google Classroom Style Sidebar ── */}
+      {/* ── Deep Navy UniShareSync Style Sidebar (Matches Screenshot 2) ── */}
       <aside
-        className={`app-sidebar${isCollapsed ? " is-collapsed" : ""}${isMobileDrawerOpen ? " is-mobile-open" : ""}`}
-        aria-label="Application navigation drawer"
+        className={`app-sidebar dark-navy-theme${isCollapsed ? " is-collapsed" : ""}${isMobileDrawerOpen ? " is-mobile-open" : ""}`}
+        aria-label="Application Navigation"
       >
-        {/* Navigation links */}
-        <nav className="sidebar-nav">
-          {!isCollapsed && <div className="sidebar-section-title">Navigation</div>}
-          <ul className="sidebar-nav-list">
-            {tabs.map((item) => {
+        {/* Sidebar Brand & Hamburger Header */}
+        <div className="sidebar-brand-header">
+          <Link to={role === "admin" ? "/admin?tab=overview" : "/dashboard"} className="sidebar-brand-left">
+            <div className="sidebar-brand-icon-box">
+              <img
+                src="/logo.png"
+                alt="SkillVoyage"
+                className="sidebar-brand-img"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none"
+                  e.currentTarget.nextElementSibling.style.display = "flex"
+                }}
+              />
+              <div className="sidebar-brand-fallback" style={{ display: "none" }}>
+                <FaCompass />
+              </div>
+            </div>
+            {!isCollapsed && <span className="sidebar-brand-text">SkillVoyage</span>}
+          </Link>
+
+          {/* Hamburger toggle directly in header */}
+          <button
+            className="sidebar-header-hamburger-btn"
+            onClick={handleToggleSidebar}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title="Toggle Sidebar"
+          >
+            <FaBars />
+          </button>
+        </div>
+
+        {/* Main Nav Section */}
+        <nav className="sidebar-nav-container">
+          {!isCollapsed && <div className="sidebar-menu-label">MENU</div>}
+          <ul className="sidebar-menu-list">
+            {primaryTabs.map((item) => {
               const active = isActive(item.link)
               const Icon = item.icon
               return (
-                <li key={item.label} className="sidebar-nav-item">
+                <li key={item.label} className="sidebar-menu-item">
                   <Link
                     to={item.link}
-                    className={`sidebar-nav-link${active ? " active" : ""}`}
+                    className={`sidebar-nav-button${active ? " active-teal" : ""}`}
                     onClick={() => setIsMobileDrawerOpen(false)}
                     title={isCollapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
                   >
-                    <div className="nav-icon-container">
-                      <Icon className="sidebar-nav-icon" aria-hidden="true" />
+                    <div className="nav-btn-icon-wrapper">
+                      <Icon className="nav-icon-glyph" />
                     </div>
-                    {!isCollapsed && <span className="sidebar-nav-text">{item.label}</span>}
-                    {active && <span className="active-indicator-bar" aria-hidden="true" />}
+                    {!isCollapsed && <span className="nav-btn-text">{item.label}</span>}
                   </Link>
                 </li>
               )
@@ -207,17 +215,38 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
           </ul>
         </nav>
 
-        {/* Sidebar Footer with Collapse/Expand helper */}
-        <div className="sidebar-footer">
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="sidebar-rail-toggle-btn"
-            title={isCollapsed ? "Expand sidebar (Ctrl + B)" : "Collapse sidebar (Ctrl + B)"}
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <FaChevronRight aria-hidden="true" /> : <FaChevronLeft aria-hidden="true" />}
-            {!isCollapsed && <span>Collapse Sidebar</span>}
-          </button>
+        {/* Pinned Bottom Section: Settings & Logout (Matches Screenshot 2) */}
+        <div className="sidebar-bottom-pinned">
+          <ul className="sidebar-menu-list">
+            <li className="sidebar-menu-item">
+              <Link
+                to="/settings"
+                className={`sidebar-nav-button${isActive("/settings") ? " active-teal" : ""}`}
+                onClick={() => setIsMobileDrawerOpen(false)}
+                title={isCollapsed ? "Settings" : undefined}
+              >
+                <div className="nav-btn-icon-wrapper">
+                  <FaCog className="nav-icon-glyph" />
+                </div>
+                {!isCollapsed && <span className="nav-btn-text">Settings</span>}
+              </Link>
+            </li>
+
+            <li className="sidebar-menu-item">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="sidebar-nav-button logout-button"
+                title={isCollapsed ? "Logout" : undefined}
+                aria-label="Logout"
+              >
+                <div className="nav-btn-icon-wrapper">
+                  <FaSignOutAlt className="nav-icon-glyph" />
+                </div>
+                {!isCollapsed && <span className="nav-btn-text">Logout</span>}
+              </button>
+            </li>
+          </ul>
         </div>
       </aside>
     </>

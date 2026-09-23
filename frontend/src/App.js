@@ -11,6 +11,8 @@ import Courses from './pages/Courses';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Homepage from './pages/Homepage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import { getBackendUrl } from './utils/apiConfig';
 import './App.css';
 
@@ -582,6 +584,10 @@ function App() {
                 <Route path="/login"  element={!token ? <LoginPage onLoginSuccess={handleLoginSuccess} backendUrl={backendUrl} /> : <Navigate to="/dashboard" replace />} />
                 <Route path="/signup" element={!token ? <SignupPage backendUrl={backendUrl} /> : <Navigate to="/dashboard" replace />} />
                 <Route path="/reset-password" element={<ResetPassword backendUrl={backendUrl} />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/terms" element={<TermsOfService />} />
 
                 {/* Protected */}
                 {token && (

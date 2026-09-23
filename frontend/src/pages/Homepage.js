@@ -13,6 +13,7 @@ import {
   FaCompass,
   FaLaptopCode,
 } from "react-icons/fa"
+import Footer from "../components/Footer"
 import "./Homepage.css"
 
 const curriculumTracks = [
@@ -520,28 +521,8 @@ function Homepage() {
         </div>
       </section>
 
-      {/* ── Refined Minimalist Footer ── */}
-      <footer className="canvas-footer" role="contentinfo">
-        <div className="footer-inner-container">
-          <div className="footer-brand-strip">
-            <div className="footer-brand-group">
-              <img src="/logo.png" alt="SkillVoyage" className="footer-logo" onError={(e) => e.target.style.display='none'} />
-              <span className="footer-brand-title">SkillVoyage</span>
-            </div>
-            <span className="footer-system-status">
-              <span className="status-dot-green" /> All Systems Operational
-            </span>
-          </div>
-
-          <div className="footer-copyright-strip">
-            <span>© {new Date().getFullYear()} SkillVoyage Inc. Engineered for high-performing learners.</span>
-            <div className="footer-legal-links">
-              <Link to="/login" className="footer-legal-link">Sign In</Link>
-              <Link to="/signup" className="footer-legal-link">Register</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* ── Refined Footer Matching Reference Screenshot ── */}
+      <Footer />
     </div>
   )
 }
