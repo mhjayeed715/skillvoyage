@@ -199,7 +199,7 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
                 <li key={item.label} className="sidebar-menu-item">
                   <Link
                     to={item.link}
-                    className={`sidebar-nav-button${active ? " active-teal" : ""}`}
+                    className={`sidebar-nav-button${active ? " active-primary" : ""}`}
                     onClick={() => setIsMobileDrawerOpen(false)}
                     title={isCollapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
@@ -221,7 +221,7 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
             <li className="sidebar-menu-item">
               <Link
                 to="/settings"
-                className={`sidebar-nav-button${isActive("/settings") ? " active-teal" : ""}`}
+                className={`sidebar-nav-button${isActive("/settings") ? " active-primary" : ""}`}
                 onClick={() => setIsMobileDrawerOpen(false)}
                 title={isCollapsed ? "Settings" : undefined}
               >

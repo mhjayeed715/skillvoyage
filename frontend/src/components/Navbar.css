@@ -105,7 +105,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
+  background: linear-gradient(135deg, var(--indigo-600) 0%, var(--indigo-500) 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -135,7 +135,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #0d9488;
+  color: var(--indigo-600);
 }
 
 .topbar-role-tag.admin {
@@ -146,7 +146,7 @@
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(11, 23, 44, 0.6);
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 180;
@@ -158,21 +158,21 @@
   to   { opacity: 1; }
 }
 
-/* ---------- Deep Navy Sidebar (Matches Screenshot 2) ---------- */
+/* ---------- Deep Slate / Navy Sidebar (Follows App Brand & Neutral System) ---------- */
 .app-sidebar.dark-navy-theme {
   position: fixed;
   left: 0;
   top: 0;
   bottom: 0;
   width: 250px;
-  background-color: #0d1b30;
+  background-color: #0f172a;
   color: #ffffff;
-  border-right: 1px solid #162a4a;
+  border-right: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
   z-index: 190;
   transition: width 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 4px 0 20px rgba(8, 16, 32, 0.25);
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.25);
   overflow-x: hidden;
   font-family: var(--font-display);
 }
@@ -189,7 +189,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #162a4a;
+  border-bottom: 1px solid #1e293b;
   flex-shrink: 0;
 }
 
@@ -204,7 +204,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(45, 212, 191, 0.15);
+  background: rgba(99, 102, 241, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,7 +217,7 @@
 }
 
 .sidebar-brand-fallback {
-  color: #2dd4bf;
+  color: #818cf8;
   font-size: 1.1rem;
 }
 
@@ -237,7 +237,7 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #8fa4c2;
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -248,7 +248,7 @@
 }
 
 .sidebar-header-hamburger-btn:hover {
-  background: #162a4a;
+  background: #1e293b;
   color: #ffffff;
 }
 
@@ -267,7 +267,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #6882a6;
+  color: #64748b;
 }
 
 .sidebar-menu-list {
@@ -305,15 +305,16 @@
 }
 
 .sidebar-nav-button:hover {
-  background: #14243d;
+  background: #1e293b;
   color: #ffffff;
 }
 
-/* Active Teal Style (Screenshot 2 "Dashboard" button) */
+/* Active State — Follows SkillVoyage Brand Indigo Palette */
+.sidebar-nav-button.active-primary,
 .sidebar-nav-button.active-teal {
-  background: linear-gradient(135deg, #0d9488 0%, #10b981 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
 }
 
 .nav-btn-icon-wrapper {
@@ -329,6 +330,7 @@
   font-size: 1.15rem;
 }
 
+.sidebar-nav-button.active-primary .nav-icon-glyph,
 .sidebar-nav-button.active-teal .nav-icon-glyph {
   color: #ffffff;
 }
@@ -343,8 +345,8 @@
 /* ---------- Pinned Bottom Section (Settings & Logout) ---------- */
 .sidebar-bottom-pinned {
   padding: 14px;
-  border-top: 1px solid #162a4a;
-  background: #0d1b30;
+  border-top: 1px solid #1e293b;
+  background: #0f172a;
   flex-shrink: 0;
 }
 

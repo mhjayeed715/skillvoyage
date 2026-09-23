@@ -4,9 +4,9 @@
    ============================================================ */
 
 .unishare-footer-root {
-  background-color: #0b1426;
+  background-color: #0f172a;
   color: #94a3b8;
-  border-top: 1px solid #16243d;
+  border-top: 1px solid #1e293b;
   padding: 64px 32px 32px;
   font-family: var(--font-display);
 }
@@ -43,7 +43,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +56,7 @@
 }
 
 .footer-logo-fallback {
-  color: #38bdf8;
+  color: #818cf8;
   font-size: 1.1rem;
 }
 
@@ -70,7 +70,7 @@
 .footer-brand-mission {
   font-size: 0.88rem;
   line-height: 1.65;
-  color: #8fa0ba;
+  color: #94a3b8;
   margin: 0;
   max-width: 320px;
 }
@@ -86,8 +86,8 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #13223d;
-  border: 1px solid #1e3357;
+  background: #1e293b;
+  border: 1px solid #334155;
   color: #94a3b8;
   display: flex;
   align-items: center;
@@ -98,9 +98,9 @@
 }
 
 .social-icon-btn:hover {
-  background: #1e3a66;
-  border-color: #38bdf8;
-  color: #38bdf8;
+  background: rgba(99, 102, 241, 0.16);
+  border-color: #6366f1;
+  color: #818cf8;
   transform: translateY(-2px);
 }
 
@@ -126,7 +126,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #8fa0ba;
+  color: #94a3b8;
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 500;
@@ -135,17 +135,17 @@
 
 .chevron-icon {
   font-size: 0.65rem;
-  color: #4b6382;
+  color: #64748b;
   transition: transform 160ms, color 160ms;
 }
 
 .footer-nav-link:hover {
-  color: #38bdf8;
+  color: #818cf8;
   transform: translateX(3px);
 }
 
 .footer-nav-link:hover .chevron-icon {
-  color: #38bdf8;
+  color: #818cf8;
   transform: translateX(2px);
 }
 
@@ -160,7 +160,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #8fa0ba;
+  color: #94a3b8;
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 500;
@@ -168,19 +168,19 @@
 }
 
 .contact-row-icon {
-  color: #2dd4bf;
+  color: #818cf8;
   font-size: 0.95rem;
   flex-shrink: 0;
 }
 
 .contact-link-row:hover {
-  color: #2dd4bf;
+  color: #c7d2fe;
 }
 
 /* ---------- Bottom Legal Strip ---------- */
 .unishare-footer-bottom {
   padding-top: 24px;
-  border-top: 1px solid #16243d;
+  border-top: 1px solid #1e293b;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -190,7 +190,7 @@
 
 .copyright-text {
   font-size: 0.82rem;
-  color: #627694;
+  color: #64748b;
   margin: 0;
 }
 
@@ -202,13 +202,13 @@
 
 .legal-link {
   font-size: 0.82rem;
-  color: #8fa0ba;
+  color: #94a3b8;
   text-decoration: none;
   transition: color 160ms;
 }
 
 .legal-link:hover {
-  color: #ffffff;
+  color: #818cf8;
 }
 
 /* ---------- Responsive Breakpoints ---------- */
