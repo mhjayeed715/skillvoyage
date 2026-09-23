@@ -7,13 +7,15 @@ import {
   FaEdit,
   FaSave,
   FaTimes,
-  FaUserCircle,
   FaPhone,
   FaLinkedin,
   FaGithub,
   FaFacebook,
   FaCamera,
-  FaUpload,
+  FaFire,
+  FaGraduationCap,
+  FaExternalLinkAlt,
+  FaCheckCircle,
 } from "react-icons/fa"
 import axios from "axios"
 import { getBackendUrl } from "../utils/apiConfig"
@@ -38,486 +40,556 @@ function Profile({ name, email, preferences }) {
     github: "",
     facebook: "",
     avatar: "",
+    role: "user",
+    streak: 7,
   })
-  const [tempProfileData, setTempProfileData] = useState({ ...profileData })
+
+  const [editForm, setEditForm] = useState({ ...profileData })
 
   useEffect(() => {
-    fetchProfileData()
+    fetchProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    setProfileData((prev) => ({
-      ...prev,
-      name: name || "",
-      email: email || "",
-      preferences: preferences || [],
-    }))
-    setTempProfileData((prev) => ({
-      ...prev,
-      name: name || "",
-      email: email || "",
-      preferences: preferences || [],
-    }))
+    if (name || email) {
+      setProfileData((prev) => ({
+        ...prev,
+        name: prev.name || name || "",
+        email: prev.email || email || "",
+        preferences: prev.preferences?.length ? prev.preferences : preferences || [],
+      }))
+    }
   }, [name, email, preferences])
 
-  const fetchProfileData = async () => {
+  const fetchProfile = async () => {
     setLoading(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await axios.get(`${backendUrl}/api/profile`, {
+      if (!token) return
+      const res = await axios.get(`${backendUrl}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-
-      // Accept any 2xx as success
-      if (response.status >= 200 && response.status < 300) {
-        const userData = response.data || {}
-        setProfileData((prev) => ({ ...prev, ...userData }))
-        setTempProfileData((prev) => ({ ...prev, ...userData }))
+      if (res.data) {
+        const d = res.data
+        setProfileData((prev) => ({
+          ...prev,
+          name: d.name || prev.name || "Learner",
+          email: d.email || prev.email,
+          bio: d.bio || "",
+          phone: d.phone || "",
+          linkedin: d.linkedin || "",
+          github: d.github || "",
+          facebook: d.facebook || "",
+          avatar: d.avatar || "",
+          preferences: d.preferences || prev.preferences || [],
+        }))
+        setEditForm({
+          name: d.name || "",
+          bio: d.bio || "",
+          phone: d.phone || "",
+          linkedin: d.linkedin || "",
+          github: d.github || "",
+          facebook: d.facebook || "",
+        })
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error)
-      // Provide sensible defaults so UI doesn't look empty
-      setProfileData((prev) => ({
-        ...prev,
-        bio: prev.bio || "Passionate learner focused on developing new skills in technology and personal growth.",
-        phone: prev.phone || "+880 1712345678",
-        linkedin: prev.linkedin || "",
-        github: prev.github || "",
-        facebook: prev.facebook || "",
-      }))
+    } catch (err) {
+      console.error("Fetch profile error:", err)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleEdit = () => {
+  const handleStartEdit = () => {
+    setEditForm({
+      name: profileData.name || "",
+      bio: profileData.bio || "",
+      phone: profileData.phone || "",
+      linkedin: profileData.linkedin || "",
+      github: profileData.github || "",
+      facebook: profileData.facebook || "",
+    })
     setIsEditing(true)
-    setTempProfileData({ ...profileData })
-  }
-
-  const handleCancel = () => {
-    setIsEditing(false)
-    setTempProfileData({ ...profileData })
     setMessage("")
   }
 
-  const handleSave = async () => {
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setMessage("")
+  }
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault()
     setLoading(true)
+    setMessage("")
     try {
       const token = localStorage.getItem("token")
+      const res = await axios.put(
+        `${backendUrl}/api/profile`,
+        {
+          name: editForm.name,
+          bio: editForm.bio,
+          phone: editForm.phone,
+          linkedin: editForm.linkedin,
+          github: editForm.github,
+          facebook: editForm.facebook,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
 
-      // Do not send avatar here — it's managed by the upload endpoint to avoid conflicts.
-      const {
-        avatar, // eslint-disable-line @typescript-eslint/no-unused-vars
-        ...payload
-      } = tempProfileData
-
-      const response = await axios.put(`${backendUrl}/api/profile`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      // Treat any 2xx as success (handles 200, 201, 204)
-      if (response.status >= 200 && response.status < 300) {
-        setProfileData({ ...tempProfileData })
-        setIsEditing(false)
-        setMessage("Profile updated successfully!")
-        setMessageType("success")
-        setTimeout(() => setMessage(""), 3000)
+      if (res.data?.user) {
+        setProfileData((prev) => ({ ...prev, ...res.data.user }))
       } else {
-        setMessage("Failed to update profile. Please try again.")
-        setMessageType("error")
+        setProfileData((prev) => ({ ...prev, ...editForm }))
       }
-    } catch (error) {
-      console.error("Error updating profile:", error)
-      // Optimistic: Avatar might already be saved separately. Keep UI changes, inform user.
-      setMessage("Failed to update profile. Your photo may still be saved.")
+      setMessage("Profile updated successfully")
+      setMessageType("success")
+      setIsEditing(false)
+    } catch (err) {
+      console.error("Save profile error:", err)
+      setMessage(err.response?.data?.error || "Failed to update profile")
       setMessageType("error")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleInputChange = (field, value) => {
-    setTempProfileData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
-
-  const handlePhotoUpload = () => {
+  const handlePhotoClick = () => {
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files && event.target.files[0]
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0]
     if (!file) return
 
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
-      setMessage("Please select a valid image file (JPEG, PNG, or GIF)")
-      setMessageType("error")
-      return
-    }
-
-    const maxSize = 5 * 1024 * 1024
-    if (file.size > maxSize) {
-      setMessage("File size must be less than 5MB")
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage("Image size must be less than 5MB")
       setMessageType("error")
       return
     }
 
     setUploadingPhoto(true)
-    setMessage("Uploading photo...")
-    setMessageType("info")
-
+    setMessage("")
     try {
+      const token = localStorage.getItem("token")
       const formData = new FormData()
       formData.append("avatar", file)
 
-      const token = localStorage.getItem("token")
-      const response = await axios.post(`${backendUrl}/api/profile/upload-avatar`, formData, {
+      const res = await axios.post(`${backendUrl}/api/profile/upload-avatar`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       })
 
-      // Accept any 2xx as success
-      if (response.status >= 200 && response.status < 300) {
-        const avatarUrl = response.data?.avatarUrl
-        if (avatarUrl) {
-          setProfileData((prev) => ({ ...prev, avatar: avatarUrl }))
-          setTempProfileData((prev) => ({ ...prev, avatar: avatarUrl }))
-        }
-        setMessage("Photo uploaded successfully!")
+      if (res.data?.avatarUrl) {
+        setProfileData((prev) => ({ ...prev, avatar: res.data.avatarUrl }))
+        setMessage("Avatar photo updated")
         setMessageType("success")
-        setTimeout(() => setMessage(""), 3000)
-      } else {
-        throw new Error("Unexpected response status for upload")
       }
-    } catch (error) {
-      console.error("Error uploading photo:", error)
-      // Fallback: use local preview so user sees immediate result
+    } catch (err) {
+      console.error("Upload avatar error:", err)
+      // Fallback to local Base64 display
       const reader = new FileReader()
-      reader.onload = (e) => {
-        const avatarUrl = e.target?.result || ""
-        setProfileData((prev) => ({ ...prev, avatar: avatarUrl }))
-        setTempProfileData((prev) => ({ ...prev, avatar: avatarUrl }))
-        setMessage("Photo uploaded successfully! (Local preview)")
-        setMessageType("success")
-        setTimeout(() => setMessage(""), 3000)
+      reader.onload = (event) => {
+        setProfileData((prev) => ({ ...prev, avatar: event.target.result }))
       }
       reader.readAsDataURL(file)
+      setMessage("Photo updated")
+      setMessageType("success")
     } finally {
       setUploadingPhoto(false)
-      if (fileInputRef.current) fileInputRef.current.value = ""
     }
   }
 
-  const handleRemovePhoto = () => {
-    setProfileData((prev) => ({ ...prev, avatar: "" }))
-    setTempProfileData((prev) => ({ ...prev, avatar: "" }))
-    setMessage("Photo removed successfully!")
-    setMessageType("success")
-    setTimeout(() => setMessage(""), 3000)
-  }
-
-  const getInitials = (fullName) => {
-    return (fullName || "User")
-      .split(" ")
-      .filter(Boolean)
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  if (loading && !profileData.name) {
-    return (
-      <div className="profile-content">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading profile...</p>
-        </div>
-      </div>
-    )
-  }
+  const userInitial = (profileData.name || profileData.email || "U").charAt(0).toUpperCase()
 
   return (
-    <div className="profile-content">
-      <div className="profile-header">
-        <div className="header-background"></div>
-        <div className="profile-info">
-          <div className="avatar-section">
-            <div className="avatar-container">
-              {profileData.avatar ? (
-                <img
-                  src={profileData.avatar || "/placeholder.svg"}
-                  alt="Profile"
-                  className="avatar-image"
-                  onError={(e) => {
-                    const target = e.target
-                    target.style.display = "none"
-                    const placeholder = target.nextElementSibling
-                    if (placeholder) placeholder.style.display = "flex"
-                  }}
+    <div className="profile-page-root">
+      <div className="profile-page-container">
+        {/* Notification Toast */}
+        {message && (
+          <div className={`profile-toast-alert ${messageType}`}>
+            <div className="toast-content">
+              <FaCheckCircle className="toast-icon" />
+              <span>{message}</span>
+            </div>
+            <button onClick={() => setMessage("")} className="toast-close-btn" aria-label="Dismiss">
+              <FaTimes />
+            </button>
+          </div>
+        )}
+
+        {/* ── Double-Bezel Hero Header Card ── */}
+        <div className="profile-hero-shell">
+          <div className="profile-hero-core">
+            <div className="hero-cover-backdrop">
+              <div className="cover-mesh-glow" />
+            </div>
+
+            <div className="hero-content-row">
+              {/* Avatar Unit */}
+              <div className="hero-avatar-wrapper">
+                <div className="hero-avatar-ring">
+                  {profileData.avatar ? (
+                    <img src={profileData.avatar} alt={profileData.name} className="hero-avatar-image" />
+                  ) : (
+                    <div className="hero-avatar-fallback">{userInitial}</div>
+                  )}
+                  <button
+                    onClick={handlePhotoClick}
+                    className="avatar-camera-btn"
+                    title="Change profile photo"
+                    disabled={uploadingPhoto}
+                    aria-label="Upload photo"
+                  >
+                    <FaCamera />
+                  </button>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
                 />
-              ) : null}
-              <div className="avatar-placeholder" style={{ display: profileData.avatar ? "none" : "flex" }}>
-                {getInitials(profileData.name)}
               </div>
 
-              <div className="avatar-actions">
-                <button
-                  className="avatar-edit-btn"
-                  onClick={handlePhotoUpload}
-                  disabled={uploadingPhoto}
-                  title="Upload photo"
-                  aria-label="Upload photo"
-                >
-                  {uploadingPhoto ? <div className="upload-spinner" aria-hidden="true"></div> : <FaCamera />}
-                </button>
+              {/* Identity & Badges */}
+              <div className="hero-identity-block">
+                <div className="hero-name-row">
+                  <h1 className="hero-user-name">{profileData.name || "SkillVoyage Learner"}</h1>
+                  <span className="hero-role-pill">Learner</span>
+                </div>
 
-                {profileData.avatar && (
-                  <button
-                    className="avatar-remove-btn"
-                    onClick={handleRemovePhoto}
-                    title="Remove photo"
-                    aria-label="Remove photo"
-                  >
-                    <FaTimes />
+                <div className="hero-meta-strip">
+                  <span className="meta-email-badge">
+                    <FaEnvelope className="meta-icon" />
+                    {profileData.email}
+                  </span>
+                  <span className="meta-streak-badge">
+                    <FaFire className="meta-streak-icon" />
+                    14 Day Streak
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="hero-actions-block">
+                {!isEditing ? (
+                  <button onClick={handleStartEdit} className="island-btn-primary" id="btn-edit-profile">
+                    <span>Edit Profile</span>
+                    <div className="island-btn-icon-circle">
+                      <FaEdit />
+                    </div>
+                  </button>
+                ) : (
+                  <button onClick={handleCancelEdit} className="island-btn-secondary" id="btn-cancel-edit">
+                    <span>Cancel Editing</span>
+                    <div className="island-btn-icon-circle">
+                      <FaTimes />
+                    </div>
                   </button>
                 )}
               </div>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-              />
             </div>
-
-            {!profileData.avatar && (
-              <div className="upload-prompt">
-                <button onClick={handlePhotoUpload} className="upload-btn" disabled={uploadingPhoto}>
-                  <FaUpload />
-                  {uploadingPhoto ? "Uploading..." : "Upload Photo"}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="profile-details">
-            <div className="name-section">
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={tempProfileData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  className="edit-input edit-name"
-                  placeholder="Enter your name"
-                />
-              ) : (
-                <h1 className="profile-name">{profileData.name || "User Name"}</h1>
-              )}
-            </div>
-
-            <div className="profile-meta">
-              <div className="meta-item">
-                <FaEnvelope className="meta-icon" />
-                <span>{profileData.email}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="profile-actions">
-            {!isEditing ? (
-              <button onClick={handleEdit} className="btn-primary">
-                <FaEdit />
-                Edit Profile
-              </button>
-            ) : (
-              <div className="edit-actions">
-                <button onClick={handleSave} className="btn-primary" disabled={loading}>
-                  <FaSave />
-                  {loading ? "Saving..." : "Save"}
-                </button>
-                <button onClick={handleCancel} className="btn-secondary">
-                  <FaTimes />
-                  Cancel
-                </button>
-              </div>
-            )}
           </div>
         </div>
-      </div>
 
-      {message && (
-        <div className={`alert alert-${messageType}`}>
-          {message}
-          <button onClick={() => setMessage("")} className="alert-close" aria-label="Close alert">
-            ×
-          </button>
-        </div>
-      )}
-
-      <div className="profile-body">
-        <div className="profile-sections">
-          {/* About Section */}
-          <div className="profile-section">
-            <h3 className="section-title">
-              <FaUser className="section-icon" />
-              About
-            </h3>
-            <div className="section-content">
-              {isEditing ? (
-                <textarea
-                  value={tempProfileData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  className="edit-textarea"
-                  placeholder="Tell us about yourself..."
-                  rows="4"
-                />
-              ) : (
-                <p className="bio-text">
-                  {profileData.bio || "No bio available. Click edit to add information about yourself."}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="profile-section">
-            <h3 className="section-title">
-              <FaEnvelope className="section-icon" />
-              Contact Information
-            </h3>
-            <div className="section-content">
-              <div className="contact-grid">
-                <div className="contact-item">
-                  <label>
-                    <FaPhone className="contact-icon" />
-                    Phone
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="tel"
-                      value={tempProfileData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                      className="edit-input"
-                      placeholder="+880 1XXXXXXXXX"
-                    />
-                  ) : (
-                    <span>{profileData.phone || "Not specified"}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Social Links */}
-          <div className="profile-section">
-            <h3 className="section-title">
-              <FaUserCircle className="section-icon" />
-              Social Links
-            </h3>
-            <div className="section-content">
-              <div className="social-grid">
-                <div className="social-item">
-                  <label>
-                    <FaLinkedin className="social-icon linkedin" />
-                    LinkedIn
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="url"
-                      value={tempProfileData.linkedin}
-                      onChange={(e) => handleInputChange("linkedin", e.target.value)}
-                      className="edit-input"
-                      placeholder="https://linkedin.com/in/yourprofile"
-                    />
-                  ) : profileData.linkedin ? (
-                    <a href={profileData.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">
-                      {profileData.linkedin}
-                    </a>
-                  ) : (
-                    <span>Not specified</span>
-                  )}
-                </div>
-
-                <div className="social-item">
-                  <label>
-                    <FaGithub className="social-icon github" />
-                    GitHub
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="url"
-                      value={tempProfileData.github}
-                      onChange={(e) => handleInputChange("github", e.target.value)}
-                      className="edit-input"
-                      placeholder="https://github.com/yourusername"
-                    />
-                  ) : profileData.github ? (
-                    <a href={profileData.github} target="_blank" rel="noopener noreferrer" className="social-link">
-                      {profileData.github}
-                    </a>
-                  ) : (
-                    <span>Not specified</span>
-                  )}
-                </div>
-
-                <div className="social-item">
-                  <label>
-                    <FaFacebook className="social-icon facebook" />
-                    Facebook
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="url"
-                      value={tempProfileData.facebook}
-                      onChange={(e) => handleInputChange("facebook", e.target.value)}
-                      className="edit-input"
-                      placeholder="https://facebook.com/yourprofile"
-                    />
-                  ) : profileData.facebook ? (
-                    <a href={profileData.facebook} target="_blank" rel="noopener noreferrer" className="social-link">
-                      {profileData.facebook}
-                    </a>
-                  ) : (
-                    <span>Not specified</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Learning Preferences */}
-          <div className="profile-section">
-            <h3 className="section-title">
-              <FaUserCircle className="section-icon" />
-              Learning Preferences
-            </h3>
-            <div className="section-content">
-              <div className="preferences-display">
-                {profileData.preferences && profileData.preferences.length > 0 ? (
-                  <div className="preferences-tags">
-                    {profileData.preferences.map((pref, index) => (
-                      <span key={index} className="preference-tag">
-                        {pref}
-                      </span>
-                    ))}
+        {/* ── Main Content Area ── */}
+        {!isEditing ? (
+          /* Profile Details View (Asymmetrical Bento Grid) */
+          <div className="profile-bento-grid">
+            {/* Left Column: About & Contact */}
+            <div className="bento-column-left">
+              {/* Bio Card */}
+              <div className="double-bezel-card bio-card">
+                <div className="bezel-card-inner">
+                  <div className="card-eyebrow-tag">
+                    <span className="eyebrow-dot" />
+                    Personal Statement
                   </div>
-                ) : (
-                  <p className="no-preferences">No learning preferences set.</p>
-                )}
+                  <h2 className="card-headline">About & Background</h2>
+                  <p className="bio-text">
+                    {profileData.bio ? (
+                      profileData.bio
+                    ) : (
+                      <span className="bio-placeholder">
+                        Passionate learner expanding knowledge horizons across fullstack systems, artificial intelligence, and modern engineering practices.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Contact Information Card */}
+              <div className="double-bezel-card contact-card">
+                <div className="bezel-card-inner">
+                  <div className="card-eyebrow-tag">
+                    <span className="eyebrow-dot" />
+                    Direct Reach
+                  </div>
+                  <h2 className="card-headline">Contact Information</h2>
+
+                  <div className="contact-tiles-stack">
+                    <div className="contact-tile">
+                      <div className="tile-icon-box">
+                        <FaEnvelope />
+                      </div>
+                      <div className="tile-content">
+                        <span className="tile-label">Verified Email</span>
+                        <span className="tile-value">{profileData.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="contact-tile">
+                      <div className="tile-icon-box">
+                        <FaPhone />
+                      </div>
+                      <div className="tile-content">
+                        <span className="tile-label">Phone Number</span>
+                        <span className="tile-value">
+                          {profileData.phone || <span className="not-provided">Not provided</span>}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Skills & Social Profiles */}
+            <div className="bento-column-right">
+              {/* Learning Preferences Card */}
+              <div className="double-bezel-card skills-card">
+                <div className="bezel-card-inner">
+                  <div className="card-eyebrow-tag">
+                    <span className="eyebrow-dot" />
+                    Curriculum Focus
+                  </div>
+                  <h2 className="card-headline">Learning Preferences</h2>
+                  <p className="card-sub-description">
+                    Topics tailored for your smart recommendations and learning pathway.
+                  </p>
+
+                  <div className="preferences-pill-cloud">
+                    {profileData.preferences && profileData.preferences.length > 0 ? (
+                      profileData.preferences.map((pref, i) => (
+                        <div key={i} className="curriculum-pill-item">
+                          <FaGraduationCap className="pill-topic-icon" />
+                          <span>{pref}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="not-provided">No preferences selected yet. Visit Settings to add.</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Social & Professional Links Card */}
+              <div className="double-bezel-card socials-card">
+                <div className="bezel-card-inner">
+                  <div className="card-eyebrow-tag">
+                    <span className="eyebrow-dot" />
+                    Digital Presence
+                  </div>
+                  <h2 className="card-headline">Connected Profiles</h2>
+
+                  <div className="social-links-grid">
+                    {/* LinkedIn */}
+                    <div className="social-profile-card">
+                      <div className="social-icon-wrapper linkedin">
+                        <FaLinkedin />
+                      </div>
+                      <div className="social-info-meta">
+                        <span className="social-title">LinkedIn</span>
+                        {profileData.linkedin ? (
+                          <a
+                            href={profileData.linkedin.startsWith("http") ? profileData.linkedin : `https://${profileData.linkedin}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="social-url-link"
+                          >
+                            <span>View Profile</span>
+                            <FaExternalLinkAlt className="external-arrow" />
+                          </a>
+                        ) : (
+                          <span className="social-unlinked">Not linked</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* GitHub */}
+                    <div className="social-profile-card">
+                      <div className="social-icon-wrapper github">
+                        <FaGithub />
+                      </div>
+                      <div className="social-info-meta">
+                        <span className="social-title">GitHub</span>
+                        {profileData.github ? (
+                          <a
+                            href={profileData.github.startsWith("http") ? profileData.github : `https://${profileData.github}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="social-url-link"
+                          >
+                            <span>View Repositories</span>
+                            <FaExternalLinkAlt className="external-arrow" />
+                          </a>
+                        ) : (
+                          <span className="social-unlinked">Not linked</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Facebook */}
+                    <div className="social-profile-card">
+                      <div className="social-icon-wrapper facebook">
+                        <FaFacebook />
+                      </div>
+                      <div className="social-info-meta">
+                        <span className="social-title">Facebook</span>
+                        {profileData.facebook ? (
+                          <a
+                            href={profileData.facebook.startsWith("http") ? profileData.facebook : `https://${profileData.facebook}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="social-url-link"
+                          >
+                            <span>View Profile</span>
+                            <FaExternalLinkAlt className="external-arrow" />
+                          </a>
+                        ) : (
+                          <span className="social-unlinked">Not linked</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          /* Profile Editor View (Double-Bezel Edit Form) */
+          <div className="double-bezel-card profile-edit-form-card">
+            <div className="bezel-card-inner">
+              <div className="form-header-strip">
+                <div>
+                  <div className="card-eyebrow-tag">
+                    <span className="eyebrow-dot" />
+                    Account Editor
+                  </div>
+                  <h2 className="card-headline">Edit Personal Information</h2>
+                </div>
+                <button onClick={handleCancelEdit} className="form-close-x-btn" aria-label="Cancel editing">
+                  <FaTimes />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="profile-edit-form">
+                <div className="form-sections-grid">
+                  {/* General details */}
+                  <div className="form-input-group">
+                    <label className="field-label">Full Name</label>
+                    <div className="clean-input-wrapper">
+                      <FaUser className="field-icon" />
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        className="clean-text-input"
+                        placeholder="Your full name"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-input-group">
+                    <label className="field-label">Phone Number</label>
+                    <div className="clean-input-wrapper">
+                      <FaPhone className="field-icon" />
+                      <input
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                        className="clean-text-input"
+                        placeholder="+880 1700 000000"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bio Full Width */}
+                  <div className="form-input-group full-width">
+                    <label className="field-label">Bio & Personal Statement</label>
+                    <textarea
+                      rows={4}
+                      value={editForm.bio}
+                      onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                      className="clean-textarea-input"
+                      placeholder="Share a short summary about your learning journey, goals, or background..."
+                    />
+                  </div>
+
+                  {/* Social Profiles */}
+                  <div className="form-input-group">
+                    <label className="field-label">LinkedIn Profile URL</label>
+                    <div className="clean-input-wrapper">
+                      <FaLinkedin className="field-icon" />
+                      <input
+                        type="text"
+                        value={editForm.linkedin}
+                        onChange={(e) => setEditForm({ ...editForm, linkedin: e.target.value })}
+                        className="clean-text-input"
+                        placeholder="https://linkedin.com/in/username"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-input-group">
+                    <label className="field-label">GitHub Profile URL</label>
+                    <div className="clean-input-wrapper">
+                      <FaGithub className="field-icon" />
+                      <input
+                        type="text"
+                        value={editForm.github}
+                        onChange={(e) => setEditForm({ ...editForm, github: e.target.value })}
+                        className="clean-text-input"
+                        placeholder="https://github.com/username"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-input-group full-width">
+                    <label className="field-label">Facebook Profile URL</label>
+                    <div className="clean-input-wrapper">
+                      <FaFacebook className="field-icon" />
+                      <input
+                        type="text"
+                        value={editForm.facebook}
+                        onChange={(e) => setEditForm({ ...editForm, facebook: e.target.value })}
+                        className="clean-text-input"
+                        placeholder="https://facebook.com/username"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-footer-actions">
+                  <button type="button" onClick={handleCancelEdit} className="pill-btn-secondary">
+                    Cancel
+                  </button>
+                  <button type="submit" className="island-btn-primary" disabled={loading}>
+                    <span>{loading ? "Saving Changes..." : "Save Profile"}</span>
+                    <div className="island-btn-icon-circle">
+                      <FaSave />
+                    </div>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

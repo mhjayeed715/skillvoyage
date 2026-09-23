@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   FaBook, FaSignOutAlt, FaCog, FaUser,
   FaChalkboardTeacher, FaTachometerAlt, FaUsers,
-  FaBars, FaTimes, FaPlus, FaChevronLeft, FaChevronRight,
+  FaBars, FaPlus, FaChevronLeft, FaChevronRight,
+  FaCompass,
 } from "react-icons/fa"
 import "./Navbar.css"
 
@@ -15,17 +16,17 @@ const userTabs = [
 ]
 
 const adminTabs = [
-  { link: "/admin?tab=overview",    label: "Admin",      icon: FaTachometerAlt },
-  { link: "/admin?tab=users",       label: "Users",      icon: FaUsers },
-  { link: "/admin?tab=courses",     label: "Courses",    icon: FaBook },
-  { link: "/admin?tab=add-course",  label: "Add Course", icon: FaPlus },
-  { link: "/profile",               label: "Profile",    icon: FaUser },
-  { link: "/settings",              label: "Settings",   icon: FaCog },
+  { link: "/admin?tab=overview",    label: "Admin Overview", icon: FaTachometerAlt },
+  { link: "/admin?tab=users",       label: "Users",          icon: FaUsers },
+  { link: "/admin?tab=courses",     label: "Courses",        icon: FaBook },
+  { link: "/admin?tab=add-course",  label: "Add Course",     icon: FaPlus },
+  { link: "/profile",               label: "Profile",        icon: FaUser },
+  { link: "/settings",              label: "Settings",       icon: FaCog },
 ]
 
 function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const tabs = role === "admin" ? adminTabs : userTabs
@@ -53,14 +54,14 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
     }
   }, [isCollapsed])
 
-  // Lock body scroll when mobile menu is open
+  // Lock body scroll when mobile drawer is open
   useEffect(() => {
-    if (isMobileMenuOpen) {
+    if (isMobileDrawerOpen) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = ""
     }
-  }, [isMobileMenuOpen])
+  }, [isMobileDrawerOpen])
 
   const isActive = (path) => {
     if (path.includes("?")) {
@@ -73,77 +74,112 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
     return location.pathname === path
   }
 
+  // Get current page name for topbar breadcrumb
+  const getCurrentPageTitle = () => {
+    const activeTab = tabs.find((t) => isActive(t.link))
+    if (activeTab) return activeTab.label
+    if (location.pathname.startsWith("/admin")) return "Admin Panel"
+    return "Workspace"
+  }
+
+  const handleToggleSidebar = () => {
+    if (window.innerWidth <= 1024) {
+      setIsMobileDrawerOpen(!isMobileDrawerOpen)
+    } else {
+      setIsCollapsed(!isCollapsed)
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("token")
     setToken?.(null)
     navigate("/")
   }
 
+  const userInitial = (email || "U").charAt(0).toUpperCase()
+
   return (
     <>
-      {/* Mobile top navigation bar */}
-      <header className="mobile-header" role="banner">
-        <div className="mobile-header-brand">
-          <img
-            src="/logo.png"
-            alt="SkillVoyage Logo"
-            className="mobile-header-logo"
-            onError={(e) => (e.currentTarget.style.display = "none")}
-          />
-          <span className="mobile-header-title">SkillVoyage</span>
+      {/* ── Universal Google Classroom Style Top Navbar ── */}
+      <header className="app-topbar" role="banner">
+        <div className="topbar-left">
+          {/* Hamburger Menu Toggle Button */}
+          <button
+            className="topbar-hamburger-btn"
+            onClick={handleToggleSidebar}
+            aria-label={isCollapsed ? "Expand navigation drawer" : "Collapse navigation drawer"}
+            title="Main menu"
+          >
+            <FaBars aria-hidden="true" />
+          </button>
+
+          {/* Logo & Brand Identity */}
+          <Link to={role === "admin" ? "/admin?tab=overview" : "/dashboard"} className="topbar-brand">
+            <div className="topbar-logo-wrap">
+              <img
+                src="/logo.png"
+                alt="SkillVoyage Logo"
+                className="topbar-logo-img"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none"
+                  e.currentTarget.nextElementSibling.style.display = "flex"
+                }}
+              />
+              <div className="topbar-logo-fallback" style={{ display: "none" }}>
+                <FaCompass />
+              </div>
+            </div>
+            <span className="topbar-brand-title">SkillVoyage</span>
+          </Link>
+
+          {/* Breadcrumb Separator & Active Page */}
+          <div className="topbar-breadcrumb">
+            <span className="breadcrumb-divider">/</span>
+            <span className="breadcrumb-current">{getCurrentPageTitle()}</span>
+          </div>
         </div>
-        <button
-          className="mobile-menu-toggle"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-          aria-expanded={isMobileMenuOpen}
-        >
-          {isMobileMenuOpen ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
-        </button>
+
+        {/* Right User Actions & Profile Pill */}
+        <div className="topbar-right">
+          <div className="topbar-user-badge">
+            <div className="topbar-avatar" title={email}>
+              {userInitial}
+            </div>
+            <div className="topbar-user-info">
+              <span className="topbar-user-email">{email}</span>
+              <span className={`topbar-role-tag ${role}`}>
+                {role === "admin" ? "Admin" : "Learner"}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="topbar-logout-btn"
+            title="Log Out"
+            aria-label="Log Out"
+          >
+            <FaSignOutAlt aria-hidden="true" />
+            <span className="logout-text">Exit</span>
+          </button>
+        </div>
       </header>
 
-      {/* Backdrop overlay for mobile drawer */}
-      {isMobileMenuOpen && (
+      {/* ── Backdrop Overlay for Mobile Drawer ── */}
+      {isMobileDrawerOpen && (
         <div
-          className="mobile-backdrop"
-          onClick={() => setIsMobileMenuOpen(false)}
+          className="sidebar-backdrop"
+          onClick={() => setIsMobileDrawerOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* Desktop & Mobile Drawer Sidebar */}
+      {/* ── Collapsible Google Classroom Style Sidebar ── */}
       <aside
-        className={`app-sidebar${isCollapsed ? " is-collapsed" : ""}${isMobileMenuOpen ? " is-mobile-open" : ""}`}
-        aria-label="Application sidebar"
+        className={`app-sidebar${isCollapsed ? " is-collapsed" : ""}${isMobileDrawerOpen ? " is-mobile-open" : ""}`}
+        aria-label="Application navigation drawer"
       >
-        {/* Brand header */}
-        <div className="sidebar-header">
-          <div className="sidebar-brand">
-            <img
-              src="/logo.png"
-              alt="SkillVoyage"
-              className="sidebar-logo"
-              onError={(e) => (e.currentTarget.style.display = "none")}
-            />
-            {!isCollapsed && <span className="sidebar-title">SkillVoyage</span>}
-          </div>
-
-          {!isCollapsed && (
-            <div className="sidebar-user-card">
-              <div className="sidebar-avatar" aria-hidden="true">
-                {(email || "U").charAt(0).toUpperCase()}
-              </div>
-              <div className="sidebar-user-meta">
-                <span className="sidebar-user-email" title={email}>{email}</span>
-                <span className={`sidebar-role-badge ${role}`}>
-                  {role === "admin" ? "Admin" : "Learner"}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Navigation list */}
+        {/* Navigation links */}
         <nav className="sidebar-nav">
           {!isCollapsed && <div className="sidebar-section-title">Navigation</div>}
           <ul className="sidebar-nav-list">
@@ -155,12 +191,15 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
                   <Link
                     to={item.link}
                     className={`sidebar-nav-link${active ? " active" : ""}`}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={() => setIsMobileDrawerOpen(false)}
                     title={isCollapsed ? item.label : undefined}
                     aria-current={active ? "page" : undefined}
                   >
-                    <Icon className="sidebar-nav-icon" aria-hidden="true" />
+                    <div className="nav-icon-container">
+                      <Icon className="sidebar-nav-icon" aria-hidden="true" />
+                    </div>
                     {!isCollapsed && <span className="sidebar-nav-text">{item.label}</span>}
+                    {active && <span className="active-indicator-bar" aria-hidden="true" />}
                   </Link>
                 </li>
               )
@@ -168,25 +207,16 @@ function Navbar({ role = "user", email = "user@skillvoyage.com", setToken }) {
           </ul>
         </nav>
 
-        {/* Footer actions */}
+        {/* Sidebar Footer with Collapse/Expand helper */}
         <div className="sidebar-footer">
           <button
-            onClick={handleLogout}
-            className="sidebar-logout-btn"
-            title={isCollapsed ? "Logout" : undefined}
-            aria-label="Log out"
-          >
-            <FaSignOutAlt className="sidebar-nav-icon" aria-hidden="true" />
-            {!isCollapsed && <span>Log Out</span>}
-          </button>
-
-          <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="sidebar-collapse-btn"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="sidebar-rail-toggle-btn"
+            title={isCollapsed ? "Expand sidebar (Ctrl + B)" : "Collapse sidebar (Ctrl + B)"}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? <FaChevronRight aria-hidden="true" /> : <FaChevronLeft aria-hidden="true" />}
+            {!isCollapsed && <span>Collapse Sidebar</span>}
           </button>
         </div>
       </aside>
