@@ -11,28 +11,26 @@ const User = require("../models/User")
 const Course = require("../models/Course")
 
 const app = express()
+
+// Explicit CORS middleware for Vercel Serverless
+app.use((req, res, next) => {
+  const origin = req.headers.origin || "*"
+  res.setHeader("Access-Control-Allow-Origin", origin)
+  res.setHeader("Access-Control-Allow-Credentials", "true")
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD")
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token"
+  )
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end()
+  }
+  next()
+})
+
 app.use(express.json())
-
-const allowedOrigins = [
-  "http://localhost:3000",
-  process.env.FRONTEND_URL,
-].filter(Boolean)
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, curl, etc.)
-      if (!origin) return callback(null, true)
-      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-        callback(null, true)
-      } else {
-        callback(null, true) // permissive fallback — tighten in production
-      }
-    },
-    credentials: true,
-  }),
-)
-
+app.use(cors())
 app.options("*", cors())
 
 // MongoDB Connection
@@ -44,10 +42,12 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB error:", err))
 
+const JWT_SECRET = process.env.JWT_SECRET || "skillvoyage-secret-2025"
+
 const authenticateToken = (req, res, next) => {
   const token = req.headers["authorization"]?.split(" ")[1]
   if (!token) return res.status(401).json({ error: "Unauthorized" })
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: "Invalid token" })
     req.user = user
     next()
@@ -156,7 +156,7 @@ app.post("/api/login", async (req, res) => {
       console.log(`Email not verified for ${email}`)
       return res.status(401).json({ error: "Email not verified" })
     }
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "24h" })
+    const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, { expiresIn: "24h" })
     res.json({
       token,
       userId: user._id,
